@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "Lövhə";
+    var pump_colors = new List<string>();
+    pump_colors.Add("#769ee3");
+    pump_colors.Add("#a6569e");
+    pump_colors.Add("#707a3e");
+}
+
+<script src="~/mscis_chart/chart.js" asp-append-version="true"></script>
+<div class="row">
+    <div class="col-12 bg-blue-gradient text-white text-center">
+        <h5 class="header-title text-white m-3">
+            RESPUBLİKA ÜZRƏ MELİORASİYA VƏ SU TƏSƏRRÜFATI OBYEKTLƏRİNİN ÜMUMİ GÖSTƏRİCİLƏRİ
+        </h5>
+    </div>
+</div>
+
+
+<div class="row mt-2">
+    <div class="col-sm-12 col-md-4 col-lg-3">
+
+        <div class="card h-100">
+            <h5 class="header-title bg-blue-gradient text-white text-center p-1">
+                OBYEKTLƏR
+            </h5>
+            <div class="card-body">
+                <table class="table table-active table-bordered">
+                    @foreach (var obj in (List<ViewDashboardLeftSide>)ViewData["LEFT_INFO"])
+                    {
+                        <tr>
+                            <td style="vertical-align: middle; font-weight: bold; font-size: initial; font-family: ui-serif;">
+                                @obj.Name
+                            </td>
+                            <td style="vertical-align: middle; font-weight: bold; font-size: initial; font-family: ui-serif;">
+                                @obj.Property
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-sm-12 col-md-8 col-lg-9">
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <h5 class="header-title bg-blue-gradient text-white text-center p-1">
+                        AÇIQ SUVARMA ŞƏBƏKƏLƏRİ
+                    </h5>
+                    <div class="card-body">
+
+
+                        <div class="row">
+                            <div class="col-6">
+                                @(Html.DevExtreme().Chart().Size(x => x.Height(270))
+    .ID("chart-1").Title("Örtük növləri").Tooltip(conf => conf.Enabled(true))
+
+    .Series(s => s.Add().Type(SeriesType.Bar).ArgumentField("Name").Name("").ValueField("TotalLength").Label(lbl=>lbl.Visible(true)))
+    .ArgumentAxis(x => x.Label(x => x.OverlappingBehavior(OverlappingBehavior.Stagger))).ValueAxis(va=>va.Add().ValueType(ChartDataType.Numeric).Label(lbl=>lbl.Format(Format.FixedPoint))).Legend(l => l.Visible(false))
+    .DataSource((List<ViewObj01ChannelForDashboard>)ViewData["CHANNEL_CHART_DATA"]).CustomizePoint("channelChart1Customize")
+)
+                            </div>
+
+                            <div class="col-6">
+                                @(Html.DevExtreme().Chart().Size(x => x.Height(270))
+    .ID("chart-2").Title("Obyekt tipləri").Tooltip(conf => conf.Enabled(true))
+
+    .Series(s => s.Add().Type(SeriesType.Bar).ArgumentField("ObjTypeName").Name("").ValueField("ObjCount").Label(lbl => lbl.Visible(true))).ArgumentAxis(x => x.Label(x => x.OverlappingBehavior(OverlappingBehavior.Stagger))).ValueAxis(va=>va.Add().ValueType(ChartDataType.Numeric).Label(lbl=>lbl.Format(Format.FixedPoint))).Legend(l => l.Visible(false))
+.DataSource((List<ViewObj01ChannelForDashboard2>)ViewData["CHANNEL_CHART_DATA2"]).CustomizePoint("channelChart2Customize")
+)
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                <div class="card">
+                    <h5 class="header-title bg-blue-gradient text-white text-center p-1">
+                        NASOS STANSİYALARI
+                    </h5>
+                    <div class="card-body">
+                        @(Html.DevExtreme().Chart().Size(x=>x.Height(260))
+    .ID("chart-3").Title("Nasos stansiyalarının növləri").Tooltip(conf => conf.Enabled(true))
+
+    .Series(s => s.Add().Type(SeriesType.Bar).ArgumentField("ObjTypeName").Name("").ValueField("ObjCount").Label(lbl => lbl.Visible(true))).ArgumentAxis(x=>x.Label(x=>x.OverlappingBehavior(OverlappingBehavior.Stagger))).ValueAxis(va=>va.Add().ValueType(ChartDataType.Numeric).Label(lbl=>lbl.Format(Format.FixedPoint))).Legend(l => l.Visible(false))
+.DataSource((List<ViewObj01ChannelForDashboard3>)ViewData["CHANNEL_CHART_DATA3"]).CustomizePoint("pumpStationChartCustomize")
+)
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card">
+                    <h5 class="header-title bg-blue-gradient text-white text-center p-1">
+                        KOLLEKTOR-DRENAJ ŞƏBƏKƏLƏRİ
+                    </h5>
+                    <div class="card-body">
+                        @(Html.DevExtreme().Chart().Size(x => x.Height(260))
+    .ID("chart-4").Title("Kollektor drenaj şəbəkələrinin tipləri").Tooltip(conf=>conf.Enabled(true))
+
+    .Series(s => s.Add().Type(SeriesType.Bar).ArgumentField("ObjTypeName").Name("").ValueField("ObjCount").Label(lbl => lbl.Visible(true))).ArgumentAxis(x=>x.Label(x=>x.OverlappingBehavior(OverlappingBehavior.Stagger))).ValueAxis(va=>va.Add().ValueType(ChartDataType.Numeric).Label(lbl=>lbl.Format(Format.FixedPoint))).Legend(l => l.Visible(false))
+.DataSource((List<ViewObj01ChannelForDashboard4>)ViewData["CHANNEL_CHART_DATA4"]).CustomizePoint("collectorChart2Customize")
+)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

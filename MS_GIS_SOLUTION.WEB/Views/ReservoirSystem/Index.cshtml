@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+<script type="text/javascript">
+    var root = '@Url.Action("CreateEdit", "ReservoirSystem")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj04ReservoirSystem>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageReservoirSystem"))
+    .Columns(cols =>
+    {
+    cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+    cols.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+    cols.AddFor(m => m.FkIdWrLocationType).LoadWithWRLocationType().Caption("Yerləşməsinə görə tipi");
+    cols.AddFor(m => m.FkIdAppointment).LoadWithAppoitment().Caption("Əsas təyinatı");
+    cols.AddFor(m => m.FkIdAppointmentAddition).LoadWithAppoitment().Caption("Digər təyinatı");
+    cols.AddFor(m => m.FkIdWrRegulationType).LoadWithWRRegulationType().Caption("Nizamlanma növü");
+    cols.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+    cols.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+    cols.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+    cols.AddFor(m => m.FkIdProtectionType).LoadWithProtectionType().Caption("Mühafizə növü");
+    cols.AddFor(m => m.ProtectionZoneArea).DataType(GridColumnDataType.Number).Caption("Mühafizə sahəsi(ha)");
+    cols.AddFor(m => m.FkIdSourceType).LoadWithSourceType().Caption("Su mənbəyi növü");
+    cols.AddFor(m => m.FkIdSource).LoadWithSource().Caption("Su mənbəyi");
+    cols.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+    cols.AddFor(m => m.ExploitationDate).DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+    cols.AddFor(m => m.VolumeA).DataType(GridColumnDataType.Number).Caption("Həcmi NBS-də (mln.m³)");
+    cols.AddFor(m => m.VolumeB).DataType(GridColumnDataType.Number).Caption("Həcmi ÖHS-də (mln.m³)");
+    cols.AddFor(m => m.DeadVolume).DataType(GridColumnDataType.Number).Caption("Ölü həcm səviyyəsi ÖHS(mln.m³)");
+    cols.AddFor(m => m.ServiceArea).DataType(GridColumnDataType.Number).Caption("Suvarma sahələri(ha)");
+    cols.AddFor(m => m.MinorAreaA).DataType(GridColumnDataType.Number).Caption("Güzgü sahəsi NSS (km²)");
+    cols.AddFor(m => m.MinorAreaB).DataType(GridColumnDataType.Number).Caption("Güzgü sahəsi ÖHS (km²)");
+    cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj04ReservoirSystem>
+        ("ReservoirSystem", editMode: GridEditMode.Popup, keyField: "IdReservoirSystem").OnEditingStart("EditingStarted")
+        .OnInitNewRow("NewRowAdding")
+        .OnRowDblClick("EditingStarted")
+
+
+        )
+
+</div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

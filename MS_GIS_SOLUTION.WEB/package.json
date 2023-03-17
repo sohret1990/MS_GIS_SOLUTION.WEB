@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "devDependencies": {
+    "devextreme": "21.1.9",
+    "@devexpress/analytics-core": "21.1.9",
+    "devexpress-reporting": "21.1.9",
+    "devexpress-richedit": "21.1.9"
+  }
+}

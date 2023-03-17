@@ -1,0 +1,88 @@
+﻿@model ApplicationSettingsVM
+@{
+    Layout = null;
+    List<SelectListItem> Themes = Model.ApplicationThemes.Select(x => new SelectListItem
+    {
+        Text = x,
+        Value = x,
+        Selected = (x == ViewData["ApplicationTheme"]),
+    }).ToList();
+}
+
+<div class="tab-pane" id="SettingsTab" role="tabpanel">
+
+    @foreach (var group in Model.ErpSettingsGroup)
+    {
+        <div class="p-1 bg-light mx-n3">
+            <h6 class="px-3">@group.Name</h6>
+        </div>
+        <div class="p-2 text-left mt-3">
+
+            @foreach (var setting in Model.ErpSettings.Where(x => x.GroupId == group.Id).ToList())
+            {
+                <div class="custom-control custom-switch switch-primary mb-3">
+                    <input onclick="onchkClick(this)" type="checkbox" class="custom-control-input" id="settings-@(setting.Id)" @(Convert.ToBoolean(setting.Value) ? "checked" : "")>
+                    <label class="custom-control-label" for="settings-@(setting.Id)">@setting.Name</label>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="p-1 bg-light mx-n3">
+        <h6 class="px-3">Proqram interfeysi</h6>
+    </div>
+    <div class="p-2 text-left mt-3">
+        <div class="custom-control mb-3">
+            <select id="cmbThemes-settings-page" class="select form-control mb-3 " role="combobox" style="width: 100%; height:36px;" asp-items="Themes" asp-for="Theme" onchange="changeTheme(this.value);"></select>
+          
+        </div>
+    </div>
+
+</div><!--end tab-pane-->
+
+<script type="text/javascript">
+
+    function onchkClick(element) {
+        let pnlInteraktivLoader = $('#pnlInteraktivLoader').dxLoadPanel('instance');
+        let key = $(element).attr('id').split('-')[1];
+        let value = $(element).is(':checked');
+        pnlInteraktivLoader.show();
+        changeSettingsValue(key, value).then((d) => {
+            pnlInteraktivLoader.hide();
+            notify('success', 'Məlumatlar müvəffəqiyyətlə yadda saxlanıldı!');
+        }).catch((err) => {
+            pnlInteraktivLoader.hide();
+            notify('error', 'əməliyyat zamanı xəta baş verdi!!!');
+        })
+    }
+
+    function changeSettingsValue(key, value) {
+        return new Promise((resolve, reject) => {
+            let settingsValueChangeUrl = '/ApplicationSettings/ChangeSettingsValue';
+            $.post(settingsValueChangeUrl, { key: key, value: value }).done(function (d) {
+                resolve(d);
+            }).fail((err) => {
+                reject(err);
+            });
+        });
+    }
+
+
+    function changeSettingsValueByCode(code, value) {
+        return new Promise((resolve, reject) => {
+            let settingsValueChangeUrl = '/ApplicationSettings/ChangeSettingsValueByCode';
+            $.post(settingsValueChangeUrl, { code: code, value: value }).done(function (d) {
+                resolve(d);
+            }).fail((err) => {
+                reject(err);
+            });
+        });
+    }
+
+    function changeTheme(theme) {
+        changeSettingsValueByCode('#APPLICATION_THEME#', theme).then((data) => {
+            notify('success', 'Məlumatlar müvəffəqiyyətlə yadda saxlanıldı!');
+            window.location.reload();
+        });
+    }
+</script>

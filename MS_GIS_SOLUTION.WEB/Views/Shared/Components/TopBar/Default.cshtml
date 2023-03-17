@@ -1,0 +1,102 @@
+﻿@{ 
+    Layout = null;
+}
+
+
+
+<script>
+    function enterKeyHandler(event) {
+
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+
+    }
+</script>
+
+<div class="topbar">
+    <!-- Navbar -->
+    <nav class="navbar-custom">
+        <ul class="list-unstyled topbar-nav float-right mb-0">
+
+            <li class="dropdown notification-list" id="liNotificationList">
+                <a class="nav-link dropdown-toggle arrow-none waves-light waves-effect" data-toggle="dropdown" href="#" role="button"
+                   aria-haspopup="false" aria-expanded="false">
+                    <i class="ti-bell noti-icon"></i>
+                    <span class="badge badge-danger badge-pill noti-icon-badge">0</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right dropdown-lg pt-0">
+
+                    <h6 class="dropdown-item-text font-15 m-0 py-3 bg-primary text-white d-flex justify-content-between align-items-center">
+                        Bildirişlər <span class="badge badge-light badge-pill">0</span>
+                    </h6>
+                    <div class="slimscroll notification-list">
+
+                        <a href="#" class="dropdown-item py-3">
+                            <div class="media">
+                                <div class="avatar-md bg-primary">
+
+                                </div>
+                                <div class="media-body align-self-center ml-2 text-truncate">
+                                    <h6 class="my-0 font-weight-normal text-dark text-muted">Göstərmək üçün məlumat yoxdur!</h6>
+                                </div><!--end media-body-->
+                            </div><!--end media-->
+                        </a><!--end-item-->
+
+                    </div>
+                    <!-- All-->
+                    <a href="javascript:void(0);" class="dropdown-item text-center text-primary">
+                        Hamısına bax <i class="fi-arrow-right"></i>
+                    </a>
+                </div>
+            </li>
+
+            <li class="dropdown" id="liLoginUser">
+                <a class="nav-link dropdown-toggle waves-effect waves-light nav-user" id="" data-toggle="dropdown" href="#" role="button"
+                   aria-haspopup="false" aria-expanded="false">
+                    @if (!string.IsNullOrEmpty(User.Claims.FirstOrDefault(x => x.Type == "ImagePath")?.Value))
+                    {
+                        <img src="/Content/uploads/users/@User.Claims.FirstOrDefault(x=>x.Type == "ImagePath")?.Value" alt="profile-user" class="rounded-circle" />
+                    }
+                    <span class="ml-1 nav-user-name hidden-sm">@User.Claims.FirstOrDefault(x => x.Type == "FullName")?.Value<i class="mdi mdi-chevron-down"></i> </span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" asp-controller="Users" asp-action="ChangePassword" asp-route-id="@User.Claims.First(x => x.Type == "UserId").Value">
+                        <i class="dripicons-document-edit
+ text-muted mr-2"></i> Şifrəni dəyiş
+                    </a>
+                    <a class="dropdown-item" asp-action="LogOut" asp-controller="Account"><i class="dripicons-exit text-muted mr-2"></i> Çıxış et</a>
+                </div>
+            </li>
+
+            @*<li class="mr-2">
+                <a href="#" id="lnkApplicationSettings" class="nav-link" data-toggle="modal" data-animation="fade" data-target=".modal-rightbar">
+                    <i data-feather="align-right" class="align-self-center"></i>
+                </a>
+            </li>*@
+
+        </ul><!--end topbar-nav-->
+
+        <ul class="list-unstyled topbar-nav mb-0">
+            <li>
+                <span class="responsive-logo">
+                    <img src="/assets/images/logo-mscis.png" alt="logo-small" class="logo-sm align-self-center" height="34">
+                </span>
+            </li>
+            <li>
+                <button class="button-menu-mobile nav-link waves-effect waves-light" id="btnMenuToggler">
+                    <i class="dripicons-menu nav-icon"></i>
+                </button>
+            </li>
+            @*<li class="hide-phone app-search">
+                <div role="search" class="" onsubmit="javascript: void(0);">
+                    <input type="text" id="AllCompo" placeholder="Axtar..." class="form-control">
+                    <a href=""><i class="fas fa-search"></i></a>
+                </div>
+            </li>*@
+        </ul>
+    </nav>
+    <!-- end navbar-->
+</div>

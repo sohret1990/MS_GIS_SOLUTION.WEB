@@ -1,0 +1,63 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+<script type="text/javascript">
+    var root = '@Url.Action("CreateEdit", "HydrotechnicalInstallation")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj06HydrotechnicalInstallation>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageHydrotechnicalInstallation"))
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        cols.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        cols.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        cols.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+        cols.AddFor(m => m.FkIdSourceType).LoadWithSourceType().Caption("Su mənbəyi növü");
+        cols.AddFor(m => m.FkIdSource).LoadWithSource().Caption("Su mənbəyi");
+        cols.AddFor(m => m.TechnicalParameters).DataType(GridColumnDataType.String).Caption("Texniki parametrləri");
+        cols.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        cols.AddFor(m => m.ExploitationDate).DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+        cols.AddFor(m => m.WaterPermeability).DataType(GridColumnDataType.Number).Caption("Su keçirmə qabiliyyəti (m³/san)");
+        cols.AddFor(m => m.Depth).DataType(GridColumnDataType.Number).Caption("Dərinliyi (m)");
+        cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj06HydrotechnicalInstallation>
+        ("HydrotechnicalInstallation", editMode: GridEditMode.Popup, keyField: "IdHydrotechnicalInstallations").OnEditingStart("EditingStarted")
+.OnInitNewRow("NewRowAdding")
+.OnRowDblClick("EditingStarted")
+
+
+        )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

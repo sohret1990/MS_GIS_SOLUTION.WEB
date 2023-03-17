@@ -1,0 +1,483 @@
+﻿@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+
+@using System.Reflection
+@{
+    string path = $"{Context.Request.Path}";
+    List<string>
+    operationList = (List<string>
+        )ViewData["operationList"];
+
+    var package_version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>
+        ().InformationalVersion;
+
+    var attrs = typeof(Startup)
+    .GetTypeInfo()
+    .Assembly.GetCustomAttributes();
+
+    var runtimeVersion = typeof(Startup).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>
+        ();
+
+    var tokens = runtimeVersion.Version.Split('.');
+
+    var m_Version = new Version(runtimeVersion.Version);
+    var appName = ViewData["ApplicationName"].ToString().ToUpper();
+}
+
+
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta content="AZERP.ORG" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <script>
+
+        //var serviceUrl = "https://datumglb.com/arcgis/rest/services/AzMTS_v7_forServer_v5/MapServer/";
+        var serviceUrl = '@Configuration.GetSection("ArcgisSettings")["ServiceUrlDatum"]';
+        var applicationBasePath = '/@ViewContext.RouteData.Values["area"]/@ViewContext.RouteData.Values["controller"]/@ViewContext.RouteData.Values["action"]';
+        var geometryType = '';
+        var serviceId = null;
+        var highlightSelect = null;
+        var objectId = null;
+        var dynamicDefinitionExpression = '1=1 and is_deleted=0';
+    </script>
+    <script src="~/js/scripts/jquery-3.6.0.min.js"></script>
+    <script src="~/js/scripts/jquery-ui.min.js"></script>
+    <script src="~/js/scripts/jquery.cookie.min.js"></script>
+    <script src="~/CustomScripts/token.js"></script>
+
+
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
+
+
+    <!-- Sweet-Alert  -->
+    <script src="/plugins/sweet-alert2/sweetalert2.min.js?version=@m_Version"></script>
+    <script src="/assets/pages/jquery.sweet-alert.init.js"></script>
+
+    <script src="~/js/scripts/quill.min.js"></script>
+
+    <link href="/plugins/hopscotch/hopscotch.min.css" rel="stylesheet" type="text/css" />
+
+    <!--
+
+    ========================Devextreme area========================
+
+    -->
+    <link href="~/css/devextreme/bootstrap.css" rel="stylesheet" />
+    <link href="~/css/devextreme/dx.common.css" rel="stylesheet" />
+    <link href="~/css/devextreme/@ViewData["ApplicationTheme"]" rel="stylesheet" />
+
+    <script src="~/js/devextreme/jszip.js"></script>
+    <script src="~/node_modules/knockout/build/output/knockout-latest.js"></script>
+    <script src="~/node_modules/devextreme/dist/js/dx.all.js"></script>
+    <script src="~/js/devextreme/cldr.js"></script>
+    <script src="~/js/devextreme/cldr/event.js"></script>
+    <script src="~/js/devextreme/cldr/supplemental.js"></script>
+    <script src="~/js/devextreme/cldr/unresolved.js"></script>
+
+    <script src="~/js/devextreme/globalize.js"></script>
+    <script src="~/js/devextreme/globalize/message.js?version=@m_Version"></script>
+    <script src="~/js/devextreme/globalize/number.js"></script>
+    <script src="~/js/devextreme/globalize/currency.js"></script>
+    <script src="~/js/devextreme/globalize/date.js"></script>
+
+    <!--Report designer area start-->
+    @if (ViewContext.RouteData.Values["controller"].ToString().ToLower().Contains("report"))
+    {
+        <partial name="_ReportLayoutPartial" />
+    }
+
+
+    <!--Report designer area end-->
+
+    <script src="~/js/methods/ajaxmethods.js?version=@m_Version"></script>
+    <script src="~/js/methods/commonentity.js?version=@m_Version"></script>
+
+    <script src="~/js/devextreme/aspnet/dx.aspnet.data.js?version=@m_Version"></script>
+    <script src="~/js/devextreme/aspnet/dx.aspnet.mvc.js?version=@m_Version"></script>
+    <script src="~/js/devextreme/localization/dx.messages.az.js?version=@m_Version"></script>
+
+
+    <!--
+
+    ========================Devextreme area========================
+
+    -->
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="/assets/images/azmts.ico">
+
+    <!-- Sweet Alert -->
+    <link href="~/plugins/sweet-alert2/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <link href="~/plugins/animate/animate.css" rel="stylesheet" type="text/css">
+
+
+    <!-- App css -->
+    <link href="~/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/jquery-ui.min.css" rel="stylesheet">
+    <link href="~/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/metisMenu.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+
+
+    @RenderSection("styles", false)
+
+    <style type="text/css">
+        .leftbar-tab-menu .main-icon-menu .nav-link + .nav-link {
+            margin-top: 15px !important;
+        }
+
+        .dx-field-item-required-mark {
+            color: red !important;
+        }
+
+        .element-detector {
+            box-shadow: 10px 10px 5px grey;
+            border: 1px solid #15c72c;
+        }
+
+        .passlink {
+            font-weight: normal;
+            color: #506EE4;
+        }
+
+            .passlink:hover {
+                font-weight: bold;
+                color: #ffbf00;
+            }
+
+        .slimScrollBar {
+            background: #9aaae7 !important;
+            opacity: 0.4;
+            width: 3px;
+        }
+
+        ul.li.active {
+            background-color: gold;
+        }
+
+        .main-menu-inner .menu-body {
+            padding: 10px;
+        }
+
+            .main-menu-inner .menu-body .nav-link {
+                border-bottom: 1px solid #519af5;
+                height: 40px;
+                border-color: #506EE4;
+            }
+
+        .menu-title {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .main-menu-inner .menu-body .nav-link {
+            height: initial;
+        }
+
+        .left-sidenav {
+            max-width: 320px;
+        }
+
+        .main-menu-inner {
+            width: 250px;
+        }
+
+        .left-sidenav .topbar-left {
+            width: 320px;
+        }
+
+        .page-wrapper .page-content, .page-content-tab {
+            width: calc(100% - 320px);
+        }
+
+        body.enlarge-menu .left-sidenav .left-sidenav-menu li:hover ul {
+            width: 250px;
+        }
+
+        body.enlarge-menu .left-sidenav .left-sidenav-menu .leftbar-menu-item:hover .menu-link {
+            width: calc(250px + 70px);
+        }
+
+        .leftbar-tab-menu {
+            width: 320px;
+        }
+
+        .navbar-custom {
+            margin-left: 320px;
+        }
+
+        .dx-form-group-caption {
+            font-weight: bold;
+        }
+
+        .dx-tab .dx-icon {
+            width: 47px;
+            height: 30px;
+            font-size: 21px;
+        }
+
+        .dx-tab-text {
+            line-height: 40px;
+        }
+
+        .dx-tabpanel > .dx-tabpanel-tabs .dx-tab.dx-tab-active .dx-tab-content, .dx-tabpanel > .dx-tabpanel-tabs .dx-tab.dx-tab-selected .dx-tab-content {
+            color: #0005fc;
+            font-weight: bold;
+        }
+
+        .dx-gallery {
+            width: 100%;
+        }
+
+        @@media only screen and (orientation : portrait) {
+            .dx-gallery-item {
+                display: table;
+            }
+
+            .gallery-item {
+                display: table-cell;
+                vertical-align: middle;
+            }
+
+                .gallery-item > img {
+                    width: 100%;
+                }
+        }
+
+        @@media only screen and (orientation : landscape) {
+            .gallery-item {
+                height: 100%;
+                text-align: center;
+            }
+
+                .gallery-item > img {
+                    height: 100%;
+                }
+        }
+
+        .leftbar-tab-menu .main-icon-menu .menu-icon.icon-dual {
+            color: #000000;
+        }
+
+        .leftbar-tab-menu .main-icon-menu {
+            background-color: #61C6BF;
+        }
+
+        .bg-primary {
+            background-color: #61C6BF !important;
+        }
+
+        .btn-outline-primary {
+            color: #61C6BF;
+            border-color: #61C6BF;
+        }
+
+        .main-menu-inner .topbar-left .logo .logo-lg {
+            height: 110px;
+        }
+
+        .leftbar-tab-menu .main-icon-menu .nav {
+            margin-top: 90px !important;
+        }
+
+        .leftbar-tab-menu .main-icon-menu .nav {
+            margin-top: 90px !important;
+        }
+
+
+
+        .dx-fileuploader-button .dx-button-text {
+            color: white !important;
+            cursor: progress !important;
+            font-size: larger !important;
+            font-weight: bold !important;
+            align-content: center !important;
+            vertical-align: central !important;
+        }
+
+        .dx-fileuploader-button.dx-widget {
+            box-shadow: none !important;
+            border: none !important;
+            background-color: orange !important;
+            width: 200px !important;
+            margin-top: 10px !important;
+            height: 40px !important;
+            vertical-align: middle !important;
+        }
+
+        .dx-fileuploader-input-wrapper .dx-button {
+            float: initial !important;
+        }
+    </style>
+
+    <!--SignalR-->
+    <script src="~/js/scripts/signalr.js"></script>
+    <script src="/js/methods/azerpSignalRMethods.js?version=@m_Version"></script>
+
+
+    <script src="~/arcgis/ArcGisServiceModule.js" asp-append-version="true"></script>
+    <script src="~/arcgis/ArcGISCommon.js" asp-append-version="true"></script>
+
+    <style type="text/css">
+        body.enlarge-menu .page-wrapper, .page-wrapper {
+            min-height: initial !important;
+        }
+    </style>
+
+
+    <script>
+
+        $(document).ready(function () {
+
+            $.post('@Configuration.GetSection("ArcgisSettings")["GenerateTokenUrl"]', {
+                f: '@Configuration.GetSection("ArcgisSettings")["Format"]',
+                expiration: @Configuration.GetSection("ArcgisSettings")["Expiration"],
+                username: '@Configuration.GetSection("ArcgisSettings")["Username"]',
+                password: '@Configuration.GetSection("ArcgisSettings")["Password"]',
+                referer: 'http://localhost:6655',
+                client: '@Configuration.GetSection("ArcgisSettings")["Client"]'
+            }).then(function (d) {
+                $.cookie("arcgistoken", JSON.stringify(d))
+
+            });
+        });
+    </script>
+
+
+    <script>
+
+        $(window).on('load', function () {
+            $('footer').removeClass("d-none");
+        });
+    </script>
+
+
+</head>
+
+<body class="@(operationList.Count(x=>ViewContext.HttpContext.Request.Path.ToString().ToLower().Contains(x.ToLower())) ==0?" enlarge-menu":"")">
+
+
+    @await Component.InvokeAsync("LeftMenu")
+
+    <!-- Top Bar Start -->
+    @await Component.InvokeAsync("TopBar")
+    <!-- Top Bar End -->
+
+    <div class="page-wrapper">
+
+        <!-- Page Content-->
+        <div class="page-content-tab">
+
+            <div class="container-fluid">
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="page-title-box" style="padding:10px;">
+                        </div><!--end page-title-box-->
+                    </div><!--end col-->
+                </div>
+                @RenderBody()
+            </div><!-- container -->
+            <!--  Modal content for the above example -->
+            <div class="modal modal-rightbar fade" tabindex="-1" role="dialog" aria-labelledby="MetricaRightbar" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title mt-0" id="MetricaRightbar">İnteraktiv bölmə</h5>
+                            @*<button id="btnCloseInteractive" type="button" class="btn btn-sm btn-soft-primary btn-circle btn-square" data-dismiss="modal" aria-hidden="true"><i class="mdi mdi-close"></i></button>*@
+                        </div>
+                        <div class="modal-body">
+                            <!-- Nav tabs -->
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div class="tab-pane active " id="ActivityTab" role="tabpanel">
+
+                                </div><!--end tab-pane-->
+                                <div class="tab-pane" id="TasksTab" role="tabpanel">
+                                    <div class="m-0">
+                                        <div id="rightbar_chart" class="apex-charts"></div>
+                                    </div>
+                                    <div class="text-center mt-n2 mb-2">
+                                        <button type="button" onclick="goToProjectManagement()" class="btn btn-warning">Layihələr</button>
+                                        <button type="button" onclick="goToTaskManagement()" class="btn btn-warning">Yeni tapşırıq</button>
+                                    </div>
+
+                                </div><!--end tab-pane-->
+                                @await Component.InvokeAsync("ApplicationSettings")
+                            </div> <!--end tab-content-->
+                        </div><!--end modal-body-->
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+            @(
+                Html.DevExtreme().LoadPanel().ID("pnlInteraktivLoader").Option("shadingColor", "rgba(0, 0, 0, 0.4)").Position(p=>p.Of(".modal-body"))
+            )
+
+
+
+
+            <footer class="footer text-center text-sm-left d-none">
+                @appName Versiya: @package_version<span class="text-muted d-none d-sm-inline-block float-right">Hazırladı : DATUM MMC </span>
+            </footer><!--end footer-->
+        </div>
+        <!-- end page content -->
+    </div>
+    <!-- end page-wrapper -->
+
+    <script src="~/assets/js/metismenu.min.js?version=@m_Version"></script>
+    <script src="~/assets/js/waves.js"></script>
+    <script src="~/assets/js/feather.min.js"></script>
+    <script src="~/assets/js/jquery.slimscroll.min.js"></script>
+
+    <!-- Parsley js -->
+    <script src="~/plugins/parsleyjs/parsley.min.js"></script>
+    <script src="~/assets/pages/jquery.validation.init.js"></script>
+
+    <script src="~/js/methods/azerp_common_scripts.js?version=@m_Version"></script>
+
+    <script src="~/plugins/hopscotch/hopscotch.js"></script>
+    @*<script src="~/CustomScripts/tours/main-page.tour.js?version=@m_Version"></script>*@
+
+    <!-- App js -->
+    <script src="~/assets/js/app.js?version=@m_Version"></script>
+
+
+
+
+
+    <script>
+        function goToTaskManagement() {
+
+        }
+
+        function goToProjectManagement() {
+
+        }
+    </script>
+
+
+    <!--Arcgis region-->
+    <script>
+        const locationPath = location.origin;
+        dojoConfig = {
+            paths: { Scripts: locationPath + "/arcgis" },
+            parseOnLoad: true,
+            async: 1
+        };
+
+    </script>
+
+    <script src="https://js.arcgis.com/4.24/"></script>
+    @*<script src="~/js/scripts/init.js"></script>*@
+
+    <!--Arcgis region end-->
+    @RenderSection("scripts", false)
+
+</body>
+
+</html>

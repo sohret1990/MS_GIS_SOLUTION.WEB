@@ -1,0 +1,90 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+<script type="text/javascript">
+    var root = '@Url.Action("CreateEdit", "PumpStation")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj08PumpStation>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storagePumpStation"))
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        cols.AddFor(m => m.FkIdSourceType).LoadWithSourceType().Caption("Su mənbəyi növü");
+        cols.AddFor(m => m.FkIdSource).LoadWithSource().Caption("Su mənbəyi");
+        cols.AddFor(m => m.FkIdPumpStationEngineType).LoadWithPumpStationEngineType().Caption("Nasos stansiyasının mühərrik tipi");
+        cols.AddFor(m => m.FkIdPumpStationType).LoadWithPumpStationType().Caption("Nasos stansiyasının növü");
+        cols.AddFor(m => m.AggregatesCount).DataType(GridColumnDataType.Number).Caption("Aqreqatların sayı (ədəd)");
+        cols.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        cols.AddFor(m => m.Productivity).DataType(GridColumnDataType.Number).Caption("Məhsuldarlığı(m³/san)");
+        cols.AddFor(m => m.FkIdAppointment).LoadWithAppoitment().Caption("Təyinatı");
+        cols.AddFor(m => m.ServiceArea).DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi sahə(ha)");
+        cols.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        cols.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+        cols.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        cols.AddFor(m => m.ExploitationDate).DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+        cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj08PumpStation>
+        ("PumpStation", editMode: GridEditMode.Popup, keyField: "IdPumpStation").OnEditingStart("EditingStarted")
+.OnInitNewRow("NewRowAdding")
+.OnRowDblClick("EditingStarted").MasterDetail(detail => detail.Enabled(true).Template(new TemplateName("engines-grid")))
+
+
+        )
+
+                @using (Html.DevExtreme().NamedTemplate("engines-grid"))
+                {
+                    <div class="row">
+                        <div class="col-12 p-3">
+                            @(Html.DevExtreme().DataGrid<DPumpStationsDevice>().LoadPanel(l => l.Enabled(true))
+                            .Columns(columns =>
+                            {
+                                columns.AddFor(m => m.PumpModel).Caption("Nasos/aqreqat markası").DataType(GridColumnDataType.String);
+                                columns.AddFor(m => m.PumpPressure).Caption("Nasosun basqısı(m)").DataType(GridColumnDataType.String);
+                                columns.AddFor(m => m.FkIdPseSynchronizeType).LoadWithPumpStationEngineSynchronizeType().Caption("Mühərrikin növü").DataType(GridColumnDataType.String);
+                                columns.AddFor(m => m.PumpProductivity).Caption("Nasosun məhsuldarlığı(m³/san)").DataType(GridColumnDataType.Number);
+                                columns.AddFor(m => m.EngineModel).Caption("Mühərrikin markası").DataType(GridColumnDataType.String);
+                                columns.AddFor(m => m.EngineLastInstallationDate).Caption("Mühərrikin son quraşdırılma ili").DataType(GridColumnDataType.Number);
+                                columns.AddFor(m => m.EngineLastRepairDate).Caption("Mühərrikin son təmir ili").DataType(GridColumnDataType.Number);
+                                columns.AddFor(m => m.EnginePipelineDiameter).Caption("Mühərrikin basqılı boru xəttinin diametri(mm)").DataType(GridColumnDataType.Number);
+                                columns.AddFor(m => m.EnginePipelineLength).Caption("Mühərrikin basqılı boru xəttinin uzunluğu(pm)").DataType(GridColumnDataType.Number);
+                                columns.AddFor(m => m.EnginePipelineMaterial).Caption("Mühərrikin basqılı boru xəttinin materialı").DataType(GridColumnDataType.String);
+                                columns.AddFor(m => m.EnginePower).Caption("Mühərrikin gücü(kvt)").DataType(GridColumnDataType.Number);
+                            }).Configure("PumpStation", loadAction: "LoadPumpStationEngines", keyField: "Objectid", allowAdd: false, allowDelete: false, allowUpdate: false,canExport:false, loadParams: new { pumpStationId = new JS("data.IdPumpStation") })
+                           )
+                        </div>
+                    </div>
+                }
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

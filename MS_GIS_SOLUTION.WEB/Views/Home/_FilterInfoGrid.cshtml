@@ -1,0 +1,703 @@
+﻿@{
+    Layout = null;
+}
+
+<script>
+
+
+    function getItems(layerId) {
+        if (layerId == ARCGIS_SERVICES.ACHIQ_SUVARMA_SHEBEKESI || layerId == ARCGIS_SERVICES.QAPALI_SUVARMA_SHEBEKESI || layerId == ARCGIS_SERVICES.KOLLEKTOR_DRENAJ_SHEBEKESI || layerId == ARCGIS_SERVICES.NASOS_STANSIYALARI) {
+            return ["Ümumi hesabat", "Ətraflı hesabat"];
+        }
+
+        return ["Ümumi hesabat"];
+    }
+
+    function onGridToolBarPreparing(e) {
+
+        let layerid = e.component.option('layer-id');
+        e.toolbarOptions.items.unshift(
+            {
+                location: "after",
+                widget: "dxDropDownButton",
+                options: {
+                    icon: "print",
+                    onClick: function (btn) {
+                        
+                    },
+                    text: 'Hesabatlar',
+                    items: getItems(layerid),
+                    dropdownOptions: {
+                        width: '300px',
+                        height: '35px'
+                    },
+                    onItemClick(e) {
+                        let reportUrl = window.location.origin + `/report/reportview?id={report_id}&`;
+                        switch (layerid) {
+                            case ARCGIS_SERVICES.ACHIQ_SUVARMA_SHEBEKESI:
+                                if (e.itemData === 'Ümumi hesabat') {
+                                    reportUrl = reportUrl.replace('{report_id}', 21);
+                                }
+                                else {
+                                    reportUrl = reportUrl.replace('{report_id}', 42);
+                                }
+                                break;
+                            case ARCGIS_SERVICES.ARTEZIAN_VE_SUBARTEZIAN_QUYULARI:
+                                reportUrl = reportUrl.replace('{report_id}', 9);
+                                break;
+                            case ARCGIS_SERVICES.BINALAR_VE_TIKILILER:
+                                reportUrl = reportUrl.replace('{report_id}', 45);
+                                break;
+                            case ARCGIS_SERVICES.CHAYLAR:
+
+                                break;
+                            case ARCGIS_SERVICES.GOLLER:
+
+                                break;
+                            case ARCGIS_SERVICES.HIDROQOVSHAQ:
+                                reportUrl = reportUrl.replace('{report_id}', 34);
+                                break;
+                            case ARCGIS_SERVICES.HIDROTEXNIKI_QURGULAR:
+                                reportUrl = reportUrl.replace('{report_id}', 28);
+                                break;
+                            case ARCGIS_SERVICES.ISTISMAR_YOLLARI:
+                                reportUrl = reportUrl.replace('{report_id}', 48);
+                                break;
+                            case ARCGIS_SERVICES.KOLLEKTOR_DRENAJ_SHEBEKESI:
+                                if (e.itemData === 'Ümumi hesabat') {
+                                    reportUrl = reportUrl.replace('{report_id}', 25);
+                                }
+                                else {
+                                    reportUrl = reportUrl.replace('{report_id}', 40);
+                                }
+                                break;
+                            case ARCGIS_SERVICES.MUHAFIZE_BENDLERI:
+                                reportUrl = reportUrl.replace('{report_id}', 50);
+                                break;
+                            case ARCGIS_SERVICES.NASOS_STANSIYALARI:
+                                if (e.itemData === 'Ümumi hesabat') {
+                                    reportUrl = reportUrl.replace('{report_id}', 7);
+                                }
+                                else {
+                                    reportUrl = reportUrl.replace('{report_id}', 41);
+                                }
+                                break;
+                            case ARCGIS_SERVICES.QAPALI_SUVARMA_SHEBEKESI:
+                                if (e.itemData === 'Ümumi hesabat') {
+                                    reportUrl = reportUrl.replace('{report_id}', 22);
+                                }
+                                else {
+                                    reportUrl = reportUrl.replace('{report_id}', 43);
+                                }
+                                break;
+                            case ARCGIS_SERVICES.QISH_OTLAQLARIN_SU_TEMINATI_SISTEMLERI:
+                                reportUrl = reportUrl.replace('{report_id}', 35);
+                                break;
+                            case ARCGIS_SERVICES.SU_TUTARLAR:
+                                reportUrl = reportUrl.replace('{report_id}', 46);
+                                break;
+                            default:
+                        }
+
+                        let form = $('#filterForm-' + layerid).dxForm('instance');
+                        let formData = $('#filterForm-' + layerid).dxForm('instance').option('formData');
+
+                        let params = '';
+                        form.option('items').map((m) => {
+
+                            if (m.itemType === 'simple') {
+                                params += `&${m.dataField}=${encodeURIComponent(form.getEditor(m.dataField).option('value'))}`;
+                            } else {
+                                m.items.map((cm) => {
+                                    if (cm.itemType === 'simple') {
+                                        params += `&${cm.dataField}=${encodeURIComponent(form.getEditor(cm.dataField).option('value'))}`;
+                                    } else {
+                                        cm.items.map((child) => {
+                                            if (child.itemType === 'simple') {
+                                                params += `&${child.dataField}=${encodeURIComponent(form.getEditor(child.dataField).option('value'))}`;
+                                            } else {
+                                                child.items.map(chCC => {
+                                                    params += `&${chCC.dataField}=${encodeURIComponent(form.getEditor(chCC.dataField).option('value'))}`;
+                                                });
+                                            }
+
+                                        });
+                                    }
+                                });
+                            }
+                        });
+
+                        params += "&fk_id_admin_unit=" + $('#adminUnitTagBox').dxTagBox('instance').option('value');
+                        reportUrl += params.replace(/null/g, "");
+                        window.open(reportUrl);
+                    }
+                }
+            },
+            {
+                location: "after"
+            }
+        );
+
+
+    }
+    
+    function onGenericFilterGridInitialized(e) {
+        let id = e.element.attr("id");
+        let grid = $('#'+id).dxDataGrid({ scrollByContent: false, height: '100%' });
+
+        $(grid.children()[0]).children().map((index, element) => {            
+            if ($(element).hasClass("dx-datagrid-header-panel")) {
+                $(grid.children()[0].children[10]).insertAfter('.dx-datagrid-header-panel');
+            }
+        });
+    }
+
+</script>
+
+
+
+@foreach (var layer in ArcGisServiceList.Layers.OrderBy(x => x.OrderNumber))
+{
+    using (Html.DevExtreme().NamedTemplate($"filterInfoGridTemplate-{layer.Id}"))
+    {
+
+        var grid = Html.DevExtreme().DataGrid().Option("is-child", false).Option("layer-id", layer.Id).ID($"filterInfoGrid-{layer.Id}").Height(new JS("function(e){ return $('#tabLayers').dxTabPanel('instance').option('height'); }"));
+        var type = (ArcgisSerivces)layer.Id;
+        switch (type)
+        {
+            case ArcgisSerivces.NASOS_STANSIYALARI:
+                grid = grid.CacheEnabled(true).Configure("PumpStation", loadAction: "LoadFilter", keyField: "IdPumpStation", loadParams: new { objectIds = new JS("function(){ return filterePumpStationIds; }") }, loadMethod: "POST").Columns(columns =>
+
+                {
+                    columns.Add().Width(150).DataField("Name").Caption("Ad");
+                    columns.Add().Width(100).DataField("FkIdAdminUnit").LoadLookupSource("AdminUnit", "LoadIdName", "IdPumpStation").Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(100).DataField("FkIdActivityStatus").LoadLookupSource("ActivityStatus", "LoadIdName", "IdActivityStatus").Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(100).DataField("FkIdTechnicalStatus").LoadLookupSource("TechnicalStatus", "LoadIdName", "IdTechnicalStatus").Caption("Texniki vəziyyəti");
+                    columns.Add().Width(100).DataField("FkIdAppointment").LoadWithAppoitment().Caption("Təyinatı");
+                    columns.Add().Width(150).DataField("FkIdSourceType").LoadWithSourceType().Caption("Su mənbəyi tipi");
+                    columns.Add().Width(150).DataField("FkIdSource").LoadWithSource().Caption("Su mənbəyi");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(150).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(100).DataField("FkIdPumpStationType").LoadWithPumpStationType().Caption("Nasos stansiyasının növü");
+                    columns.Add().Width(100).DataField("FkIdPumpStationEngineType").LoadWithPumpStationEngineType().Caption("Nasos stansiyasının tipi");
+                    columns.Add().Width(80).DataField("ServiceArea").Caption("Xidmət etdiyi sahə(ha)");
+                    columns.Add().Width(80).DataField("TotalCapacity").Caption("Ümumi gücü(kvt)");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                });
+
+                //grid.Summary(summary =>
+                //{
+
+                //    summary.TotalItems(items =>
+                //    {
+                //        items.Add().Column("Name").ShowInColumn("Name").DisplayFormat("Cəmi:").SummaryType(SummaryType.Max);
+                //        items.Add().Column("ServiceArea").ShowInColumn("ServiceArea").DisplayFormat("{0}").SummaryType(SummaryType.Sum);
+                //        items.Add().Column("TotalCapacity").ShowInColumn("TotalCapacity").DisplayFormat("{0}").SummaryType(SummaryType.Sum);
+                //    });
+
+                //});
+
+                grid.MasterDetail(md => md.Enabled(true).Template(new TemplateName($"detail-template-{layer.Id}")));
+
+                break;
+            case ArcgisSerivces.ACHIQ_SUVARMA_SHEBEKELERI:
+                grid = grid.CacheEnabled(true).Configure("Channel", loadAction: "LoadFilter", keyField: "IdChannel", loadParams: new { objectIds = new JS("function(){ return filtereChannelIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Type(GridCommandColumnType.Buttons).Width(60).Buttons(buttons =>
+                    {
+                        buttons.Add().Name(GridColumnButtonName.Edit).Icon("preferences").OnClick("function(e){ showChannelHydrotechnicalDevices(e.row.data.IdChannel); }").Visible(true).Text("Qurğular");
+
+                        buttons.Add().Name(GridColumnButtonName.Edit).Icon("range").OnClick("function(e){ showChannelCoverType(e.row.data);}").Visible(new JS("function(e){ return e.row.data.CoverIds.length > 0 }")).Text("Örtük");
+                    });
+
+                    columns.Add().Width(300).DataField("Name").Caption("Ad");
+                    columns.Add().DataField("FkIdObjectType").LoadWithObjectType().Caption("Obyekt tipi");
+                    columns.Add().DataField("FkIdSourceType").LoadWithSourceType().Caption("Su mənbəyi tipi");
+                    columns.Add().DataField("FkIdSource").LoadWithSource().Caption("Su mənbəyi");
+                    columns.Add().DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                });
+
+                grid.MasterDetail(md => md.Enabled(true).Template(new TemplateName($"detail-template-{layer.Id}")));
+                break;
+            case ArcgisSerivces.QAPALI_SUVARMA_SHEBEKELERI:
+                grid = grid.Configure("ClosedChannel", loadAction: "LoadFilter", keyField: "IdClosedChannel", loadParams: new { objectIds = new JS("function(){ return filtereClosedChannelIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Type(GridCommandColumnType.Buttons).Width(40).Buttons(buttons =>
+                    {
+                        buttons.Add().Name(GridColumnButtonName.Edit).Icon("preferences").OnClick("function(e){ showChannelHydrotechnicalDevices(e.row.data.IdClosedChannel); }").Visible(true).Text("Qurğular");
+                    });
+                    columns.Add().Width(200).DataField("Name").Caption("Ad");
+                    columns.Add().Width(150).DataField("FkIdSourceType").LoadWithSourceType().Caption("Su mənbəyi tipi");
+                    columns.Add().Width(150).DataField("FkIdSource").LoadWithSource().Caption("Su mənbəyi");
+                    columns.Add().Width(150).DataField("FkIdObjectType").LoadWithObjectType().Caption("Obyekt tipi");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                });
+                grid.MasterDetail(md => md.Enabled(true).Template(new TemplateName($"detail-template-{layer.Id}")));
+                break;
+            case ArcgisSerivces.KOLLEKTOR_DRENAJ_SHEBEKESI:
+                grid = grid.Configure("Collector", loadAction: "LoadFilter", keyField: "IdCollector", loadParams: new { objectIds = new JS("function(){ return filtereCollectorIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Type(GridCommandColumnType.Buttons).Width(40).Buttons(buttons =>
+                    {
+                        buttons.Add().Name(GridColumnButtonName.Edit).Icon("preferences").OnClick("function(e){ showChannelHydrotechnicalDevices(e.row.data.IdCollector); }").Visible(true).Text("Qurğular");
+                    });
+                    columns.Add().Width(200).DataField("Name").Caption("Ad");
+                    columns.Add().Width(150).DataField("FkIdObjectType").LoadWithObjectType().Caption("Obyekt tipi");
+                    columns.Add().Width(150).DataField("FkIdAppointment").LoadWithAppoitment(new { groupId = 7 }).Caption("Təyinatı");
+                    columns.Add().Width(150).DataField("FkReceivingSourceType").LoadWithSourceType().Caption("Drenaj sularının qəbuledicisi növləri");
+                    columns.Add().Width(150).DataField("FkIdReceivingSource").LoadWithSource().Caption("Drenaj sularının qəbuledicisi");
+                    columns.Add().Width(150).DataField("ServiceAdminUnit").LoadWithAdminUnit().Caption("Xidmət etdiyi region");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Columns(cols =>
+                    {
+                        cols.Add().Width(80).DataField("MinCapacity").Caption("Minimal");
+                        cols.Add().Width(80).DataField("MaxCapacity").Caption("Maksimal");
+                    }).Caption("Su tutumu (m3/san)");
+
+                });
+
+                grid.MasterDetail(md => md.Enabled(true).Template(new TemplateName($"detail-template-{layer.Id}")));
+                break;
+            case ArcgisSerivces.HIDROTEXNIKI_QURGULAR:
+                grid = grid.Configure("HydrotechnicalInstallation", loadAction: "LoadFilter", keyField: "IdHydrotechnicalInstallations", loadParams: new { data = new JS("function(){ return JSON.stringify(filtereHydrotechnicalInstallationFormValues); }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").Caption("Ad");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(120).DataField("FkIdHtiNetworkType").LoadWithHtiNetworkType().Caption("Qurğu şəbəkə növü");
+                    columns.Add().Width(120).DataField("FkIdHtInstallationType").LoadWithHtInstallationType().Caption("Qurğu tipləri");
+                    columns.Add().Width(120).DataField("FkIdSourceType").LoadWithSourceType().Caption("Su mənbəyi tipi");
+                    columns.Add().Width(120).DataField("FkIdSource").LoadWithSource().Caption("Su mənbəyi");
+                    columns.Add().Width(120).DataField("TechnicalParameters").Caption("Texniki parametrləri");
+                    columns.Add().Width(120).DataField("FkIdTechnicalStatus").LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(80).DataField("WaterPermeability").Caption("Su keçirmə qabiliyyəti (m³/san)");
+                    columns.Add().Width(80).DataField("Depth").Caption("Dərinliyi (m)");
+
+                });
+
+                break;
+            case ArcgisSerivces.ARTEZIAN_VE_SUBARTEZIAN_QUYULARI:
+                grid = grid.Configure("ArtesianSubartesianWell", loadAction: "LoadFilter", keyField: "IdArtesianSubartesianWell", loadParams: new { objectIds = new JS("function(){ return filteredArtesianIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("FkAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdArtesianType").LoadWithArtesianType().Caption("Tipi");
+                    columns.Add().Width(120).DataField("FkIdWaterUseAssociation").LoadWithWaterUseAssociation().Caption("Xidmət etdiyi SİB-in adı");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(80).DataField("No").DataType(GridColumnDataType.String).Caption("Nömrəsi (reper)");
+                    columns.Add().Width(100).DataField("PumpModel").DataType(GridColumnDataType.String).Caption("Nasosun markası");
+                    columns.Add().Width(100).DataField("PumpType").Caption("Vertikal nasosun növü");
+                    columns.Add().Width(100).DataField("EnginePover").DataType(GridColumnDataType.String).Caption("Mühərrikin gücü(kvt)");
+                    columns.Add().Width(80).DataField("Productivity").DataType(GridColumnDataType.Number).Caption("Məhsuldarlığı(l/s)");
+                    columns.Add().Width(120).DataField("FkIdAppointment").LoadWithAppoitment(new { groupId = 3 }).Caption("Təyinatı");
+                    columns.Add().Width(80).DataField("ServiceArea").DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi sahə(ha)");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(120).DataField("FkIdTechnicalStatus").LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                    columns.Add().Width(80).DataField("ExploitationDate").DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(80).DataField("Depth").DataType(GridColumnDataType.Number).Caption("Dərinliyi (m)");
+                    columns.Add().Width(80).DataField("ScadaInfo").Lookup(gl => gl.DataSource(new JS("[{ Value:1, text: 'Var'},{Value:2, text: 'Yoxdur' }]")).DisplayExpr("text").ValueExpr("Value")).Caption("SCADA sistemi");
+                });
+
+                break;
+            case ArcgisSerivces.HIDROQOVSHAQ:
+                grid = grid.Configure("HydroJunction", loadAction: "LoadFilter", keyField: "IdHydroJunctions", loadParams: new { objectIds = new JS("function(){ return filtereHydrojunctionIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdAppointment").LoadWithAppoitment().Caption("Təyinatı");
+                    columns.Add().Width(120).DataField("FkIdHydroJunctionType").LoadWithHydroJunctionType().Caption("Hidroqovşaq tipi");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(120).DataField("FkIdProtectionType").LoadWithProtectionType().Caption("Mühafizə növü");
+                    columns.Add().Width(120).DataField("ProtectionZoneArea").DataType(GridColumnDataType.Number).Caption("Su mühafizə zonasının eni (m)");
+                    columns.Add().Width(120).DataField("FkIdSourceType").LoadWithSourceType().Caption("Su mənbəyi növü");
+                    columns.Add().Width(120).DataField("FkIdSource").LoadWithSource().Caption("Su mənbəyi");
+                    columns.Add().Width(120).DataField("FkIdTechnicalStatus").LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                    columns.Add().Width(80).DataField("ExploitationDate").DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(80).DataField("ServiceArea").DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi sahə (min ha)");
+                    columns.Add().Width(80).DataField("DamLength").DataType(GridColumnDataType.Number).Caption("Dambanın uzunluğu (km)");
+                    columns.Add().Width(80).DataField("MaxWaterReleaseCapacity").DataType(GridColumnDataType.Number).Caption("Suburaxma qabiliyyəti (m³/san)");
+                    columns.Add().Width(120).DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+                    columns.Add().Width(120).DataField("ServiceAdminUnit").LoadWithAdminUnit().Caption("Xidmət etdiyi suvarma regionu");
+
+                });
+
+                break;
+            case ArcgisSerivces.ISTISMAR_YOLLARI:
+                grid = grid.Configure("ExploitationRoads", loadAction: "LoadFilter", keyField: "IdExploitationRoads", loadParams: new { objectIds = new JS("function(){ return filteredRoadIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(170).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(150).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(220).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(120).DataField("Length").Caption("Yolun uzunluğu(km)");
+                    columns.Add().Width(80).DataField("RoadWidth").Caption("Yolun eni(m)");
+                    columns.Add().Width(80).DataField("RoadCover").Caption("Örtük");
+                    columns.Add().Width(100).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(120).DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+
+                });
+
+                break;
+            case ArcgisSerivces.MUHAFIZE_BENDLERI: //
+                grid = grid.Configure("ProtectionBarrier", loadAction: "LoadFilter", keyField: "IdProtectionBarriers", loadParams: new { objectIds = new JS("function(){ return filteredBarrierIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(170).DataField("FkIdRiver").LoadWithRiver().Caption("Çayın adı");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(120).DataField("FkIdTechnicalStatus").LoadWithTechnicalStatus().Caption("Texniki parametrləri");
+                    columns.Add().Width(120).DataField("FkIdAppointment").LoadWithAppoitment().Caption("Təyinatı");
+                    columns.Add().Width(120).DataField("FkIdBarrierType").LoadWithBarrierType().Caption("Bəndin növü");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(80).DataField("BarrierHeight").DataType(GridColumnDataType.Number).Caption("Hündürlük (m)");
+                    columns.Add().Width(80).DataField("BarrierLength").DataType(GridColumnDataType.Number).Caption("Uzunluq (km)");
+                    columns.Add().Width(170).DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+
+                });
+
+                break;
+            case ArcgisSerivces.QISH_OTLAQ_SAHELERI:
+                grid = grid.Configure("WinterWaterSupply", loadAction: "LoadFilter", keyField: "IdWinterWaterSupplySystems", loadParams: new { objectIds = new JS("function(){ return filteredSupplyIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(80).DataField("ServiceArea").DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi sahə (ha)");
+                    columns.Add().Width(80).DataField("ClosedIrrigationNetworks").DataType(GridColumnDataType.Number).Caption("Qapalı suvarma şəbəkələri (km)");
+                    columns.Add().Width(80).DataField("DeviceCount").DataType(GridColumnDataType.Number).Caption("Qurğu sayı (ədəd)");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+
+                });
+
+                break;
+            case ArcgisSerivces.CHAYLAR:
+                grid = grid.Configure("River", keyField: "IdRiver", loadAction: "LoadFilter", loadParams: new { objectIds = new JS("function(){ return filteredRiverIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(250).DataField("Name").DataType(GridColumnDataType.String).Caption("Adı");
+                    columns.Add().Width(80).DataField("Lenght").DataType(GridColumnDataType.String).Caption("Uzunluğu");
+                    columns.Add().DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+
+                });
+                break;
+            case ArcgisSerivces.SUTUTARLAR:
+                grid = grid.Configure("ReservoirSystem", loadAction: "LoadFilter", keyField: "IdReservoirSystem", loadParams: new { objectIds = new JS("function(){ return filteredReservoirIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdWrLocationType").LoadWithWRLocationType().Caption("Yerləşməsinə görə tipi");
+                    columns.Add().Width(120).DataField("FkIdAppointment").LoadWithAppoitment(new { groupId = 4 }).Caption("Əsas təyinatı");
+                    columns.Add().Width(120).DataField("FkIdAppointmentAddition").LoadWithAppoitment(new { groupId = 4 }).Caption("Digər təyinatı");
+                    columns.Add().Width(120).DataField("FkIdWrRegulationType").LoadWithWRRegulationType().Caption("Nizamlanma növü");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(120).DataField("FkIdProtectionType").LoadWithProtectionType().Caption("Mühafizə növü");
+                    columns.Add().Width(80).DataField("ProtectionZoneArea").DataType(GridColumnDataType.Number).Caption("Mühafizə sahəsi(ha)");
+                    columns.Add().Width(80).DataField("ServiceArea").DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi sahə (ha)");
+                    columns.Add().Width(120).DataField("FkIdSourceType").LoadWithSourceType().Caption("Su mənbəyi növü");
+                    columns.Add().Width(120).DataField("FkIdSource").LoadWithSource().Caption("Su mənbəyi");
+                    columns.Add().Width(120).DataField("FkIdTechnicalStatus").LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                    columns.Add().Width(120).DataField("ExploitationDate").DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(80).DataField("VolumeA").DataType(GridColumnDataType.Number).Caption("Həcmi NBS-də (mln.m³)");
+                    columns.Add().Width(80).DataField("VolumeB").DataType(GridColumnDataType.Number).Caption("Həcmi ÖHS-də (mln.m³)");
+                    columns.Add().Width(80).DataField("DeadVolume").DataType(GridColumnDataType.Number).Caption("Ölü həcm səviyyəsi ÖHS(mln.m³)");
+                    columns.Add().Width(80).DataField("ServiceArea").DataType(GridColumnDataType.Number).Caption("Suvarma sahələri(ha)");
+                    columns.Add().Width(80).DataField("MinorAreaA").DataType(GridColumnDataType.Number).Caption("Güzgü sahəsi NSS (km²)");
+                    columns.Add().Width(80).DataField("MinorAreaB").DataType(GridColumnDataType.Number).Caption("Güzgü sahəsi ÖHS (km²)");
+                    columns.Add().DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+
+                });
+
+                break;
+            case ArcgisSerivces.BINALAR:
+                grid = grid.Configure("BuildingAndConstructions", loadAction: "LoadFilter", keyField: "IdBuildingsConstructions", loadParams: new { objectIds = new JS("function(){ return filteredBuildingIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(120).DataField("Name").DataType(GridColumnDataType.String).Caption("Ad");
+                    columns.Add().Width(120).DataField("ReyestrNumber").DataType(GridColumnDataType.String).Caption("Reyestr No");
+                    columns.Add().Width(120).DataField("UsageMode").DataType(GridColumnDataType.String).Caption("İstifadə rejimi");
+                    columns.Add().Width(120).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(120).DataField("FkIdAppointment").LoadWithAppoitment(new { groupId = 2 }).Caption("Əsas təyinatı");
+                    columns.Add().Width(120).DataField("FkIdActivityStatus").LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.Add().Width(120).DataField("FkIdTechnicalStatus").LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                    columns.Add().Width(120).DataField("FkIdOwnershipType").LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    //columns.Add().Width(120).DataField("FkIdProtectionType").LoadWithProtectionType().Caption("Mühafizə növü");
+                    columns.Add().Width(120).DataField("FkIdOwner").LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.Add().Width(80).DataField("Area").Caption("Ümumi sahəsi(kvm)");
+                    columns.Add().Width(80).DataField("AreaA").Caption("Faydalı sahəsi(kvm)");
+                    columns.Add().Width(80).DataField("AreaB").Caption("Köməkçi sahəsi(kvm)");
+                    columns.Add().Width(800).DataField("ServiceArea").Caption("Xidmət etdiyi sahə(ha)");
+                    columns.Add().Width(80).DataField("ExploitationDate").Caption("İstismara verildiyi tarix(il)");
+                    columns.Add().Width(120).DataField("AdditionalAdminUnit").DataType(GridColumnDataType.String).Caption("Qəsəbə/Kənd");
+                    columns.Add().DataField("Description").Caption("Təsviri");
+
+                });
+
+                break;
+            case ArcgisSerivces.GOLLER:
+                grid = grid.Configure("Lake", keyField: "IdLake", loadAction: "LoadFilter", loadParams: new { objectIds = new JS("function(){ return filteredLakeIds; }") }, loadMethod: "POST").Columns(columns =>
+                {
+                    columns.Add().Width(250).DataField("Name").DataType(GridColumnDataType.String).Caption("Adı");
+                    columns.Add().Width(250).DataField("FkIdAdminUnit").LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+                    columns.Add().Width(250).DataField("Volume").DataType(GridColumnDataType.String).Caption("Həcmi");
+                    columns.Add().Width(250).DataField("Description").DataType(GridColumnDataType.String).Caption("Təsviri");
+
+                });
+
+                break;
+            default:
+
+                break;
+
+        }
+
+        @(
+            grid.OnToolbarPreparing("onGridToolBarPreparing").OnRowDblClick("onFilterInfoGridRowDblClick").RemoteOperations(true).Editing(e=>e.AllowAdding(false).AllowDeleting(false)
+            .AllowUpdating(false)).Scrolling(scroll=>scroll.ColumnRenderingMode(GridColumnRenderingMode.Standard)
+                .Mode(GridScrollingMode.Standard).ShowScrollbar(ShowScrollbarMode.OnHover)).Height(350).Width("100%").WordWrapEnabled(true).Editing(e => e.AllowAdding(false).AllowUpdating(false).AllowDeleting(false))
+                .OnContentReady("onGenericFilterGridInitialized")
+
+                )
+    }
+}
+
+
+
+@* Nasos stansiyalari *@
+@using (Html.DevExtreme().NamedTemplate("detail-template-0"))
+{
+    @(
+    Html.DevExtreme().DataGrid<DPumpStationsDevice>().Option("layer-id", 0).Option("is-child", true).KeyExpr("IdPumpStationsDevices").Configure(controller: "PumpstationDevice", loadAction: "LoadDevicesByPumpStation", keyField: "IdPumpStationsDevices", loadParams: new { PumpStationId = new JS("key") }, allowAdd: false, allowUpdate: false, allowDelete: false ).Columns(columns =>
+    {
+        columns.Add().Caption("Nasos").IsBand(true).Columns(cols =>
+        {
+            cols.AddFor(m => m.PumpModel).Width(150).Caption("Markası");
+            cols.AddFor(m => m.PumpPressure).Width(100).Caption("Nasosun basqısı (m)");
+            cols.AddFor(m => m.PumpProductivity).Width(120).Caption("Məhsuldarlığı (m³/san)");
+
+        });
+
+        columns.Add().Caption("Mühərrik").IsBand(true).Columns(cols =>
+        {
+            cols.AddFor(m => m.EngineModel).Width(150).Caption("Mühərrikin markası");
+            cols.AddFor(m => m.EngineLastInstallationDate).Width(100).Caption("Son quraşdırma tarixi(il)");
+            cols.AddFor(m => m.EngineLastRepairDate).Width(100).Caption("Son təmir tarixi(il)");
+            cols.AddFor(m => m.EnginePipelineDiameter).Width(100).Caption("Basqılı boru xəttinin diametri(mm)");
+            cols.AddFor(m => m.EnginePipelineLength).Width(100).Caption("Basqılı boru xəttinin uzunluğu(pm)");
+            cols.AddFor(m => m.EnginePipelineMaterial).Width(120).Caption("Basqılı boru xəttinin materialı");
+            cols.AddFor(m => m.EnginePower).Width(100).Caption("Mühərrikin gücü(kvt)");
+            cols.AddFor(m => m.FkIdPseSynchronizeType).LoadLookupSource("PumpStationEngineSynchronizeType", "LoadIdName").Width(100).Caption("Mühərrikin növü");
+        });
+    }).FilterRow(filter=>filter.Visible(false))
+    .SearchPanel(sp=>sp.Visible(false))
+    .Grouping(g=>g.ExpandMode(GridGroupingExpandMode.ButtonClick))
+    .GroupPanel(gp=>gp.Visible(false))
+    .FilterPanel(fp=>fp.Visible(false))
+    .Paging(p=>p.Enabled(false))
+    .Pager(pg=>pg.Visible(false))
+    .OnRowDblClick("function(){  }")
+    .Export(ex=>ex.Enabled(false))
+    .ColumnChooser(cc=>cc.Enabled(false))
+    )
+}
+
+
+@* Aciq suvarma sebekeleri *@
+@using (Html.DevExtreme().NamedTemplate("detail-template-1"))
+{
+    @(
+    Html.DevExtreme().DataGrid<Obj01ChannelsAdminUnit>().KeyExpr("IdChannelAdminUnit").Configure(controller: "Channel", loadAction: "LoadChannelAdminUnit", keyField: "IdChannelAdminUnit", loadParams: new { channelId = new JS("key") }, allowAdd: false, allowUpdate: false, allowDelete: false ).Columns(columns =>
+    {
+        columns.AddFor(m => m.Name).Caption("Kanalın adı");
+        columns.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        columns.AddFor(m => m.AdditionalAdminUnit).Caption("Qəsəbə, kənd");
+        columns.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        columns.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        columns.AddFor(m => m.FkIdObjectType).LoadWithObjectType().Caption("Obyektin tipi");
+        columns.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        columns.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+        columns.AddFor(m => m.Capacity).Caption("Suburaxma qabiliyyəti (m³/san)");
+        columns.AddFor(m => m.DeviceCount).Caption("Üzərindəki hidrotexniki qurğuların sayı(ədəd)");
+        columns.AddFor(m => m.Length).Caption("Coğrafi uzunluq(km)");
+        columns.AddFor(m => m.ProtectionZoneArea).Caption("Mühafizə zonasının eni (m)");
+        columns.AddFor(m => m.WaterMetersCount).Caption("Su ölçən cihazların sayı(ədəd)");
+        columns.AddFor(m => m.ServiceArea).Caption("Xidmət etdiyi sahə (ha)");
+        columns.AddFor(m => m.OrderNo).SortOrder(SortOrder.Asc).SortIndex(0).Visible(false);
+        columns.Add().DataField("ServiceSib").Caption("Xidmət etdiyi siblər");
+        columns.Add().Type(GridCommandColumnType.Buttons).Width(40).Buttons(buttons =>
+                    {
+                        buttons.Add().Name(GridColumnButtonName.Edit).Icon("range").OnClick("function(e){ showChannelCoverType(e.row.data);}").Visible(new JS("function(e){ return e.row.data.CoverIds.length > 0 }")).Text("Beton örtük");
+                    });
+
+    }).FilterRow(filter=>filter.Visible(false)).HeaderFilter(hf=>hf.Visible(false))
+    .WordWrapEnabled(true)
+    .SearchPanel(sp=>sp.Visible(false))
+    .Grouping(g=>g.ExpandMode(GridGroupingExpandMode.ButtonClick))
+    .GroupPanel(gp=>gp.Visible(false))
+    .FilterPanel(fp=>fp.Visible(false))
+    .Paging(p=>p.Enabled(false))
+    .Pager(pg=>pg.Visible(false))
+    .OnRowDblClick("onFilterInfoGridRowDblClick")
+    .Export(ex=>ex.Enabled(false))
+    .ColumnChooser(cc=>cc.Enabled(false)).MasterDetail(ms =>
+    {
+        ms.Enabled(true);
+        ms.AutoExpandAll(true);
+        ms.Template(new TemplateName("channel-admin-unit-detail-template-1"));
+        ms.Option("AdminUnitId", new JS("data.IdChannelAdminUnit"));
+    })
+    .Option("layer-id", 1).Option("is-child", true)
+    .KeyExpr("IdChannelAdminUnit")
+    )
+}
+
+
+@* Aciq suvarma sebekesinin detallari *@
+
+@using (Html.DevExtreme().NamedTemplate("channel-admin-unit-detail-template-1"))
+{
+
+    @(Html.DevExtreme().DataGrid<DObjectAdminUnitBarrierType>().Columns(columns =>
+                {
+                    columns.AddFor(x => x.FkIdBarrierType).LoadWithBarrierType().Caption("Örtük tipi");
+                    columns.AddFor(x => x.Length).DataType(GridColumnDataType.Number).Caption("Uzunluq(km)");
+                })
+                .Configure<DObjectAdminUnitBarrierType>(controller: "ObjectAdminUnitBarrierType",loadAction:"LoadBarrierTypesByAdminUnit", keyField:"IdOauBarrierType", allowAdd:false, allowDelete:false, allowUpdate:false, loadParams:new { AdminUnitId = new JS("data.IdChannelAdminUnit") })
+                .FilterRow(filter=>filter.Visible(false)).HeaderFilter(hf=>hf.Visible(false))
+                .SearchPanel(sp=>sp.Visible(false))
+                .Grouping(g=>g.ExpandMode(GridGroupingExpandMode.ButtonClick))
+                .GroupPanel(gp=>gp.Visible(false))
+                .FilterPanel(fp=>fp.Visible(false))
+                .Paging(p=>p.Enabled(false))
+                .Pager(pg=>pg.Visible(false))
+                .OnRowDblClick("function(e){ }")
+                .Export(ex=>ex.Enabled(false))
+                .ColumnChooser(cc=>cc.Enabled(false))
+                .Width(400)
+                )
+
+}
+
+@* Aciq suvarma sebekesinin detallari *@
+
+
+
+@* Qapali suvarma sebekeleri *@
+@using (Html.DevExtreme().NamedTemplate("detail-template-2"))
+{
+    @(
+    Html.DevExtreme().DataGrid<Obj02ClosedChannelAdminUnit>().Configure(controller: "ClosedChannel", loadAction: "LoadClosedChannelAdminUnit", keyField: "IdClosedChannelAdminUnit", loadParams: new { channelId = new JS("key") }, allowAdd: false, allowUpdate: false, allowDelete: false ).Columns(columns =>
+    {
+        columns.AddFor(m => m.Name).Caption("Kanalın adı");
+        columns.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        columns.AddFor(m => m.AdditionalAdminUnit).Caption("Qəsəbə, kənd");
+        columns.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        columns.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        columns.AddFor(m => m.FkIdObjectType).LoadWithObjectType().Caption("Obyektin tipi");
+        columns.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        columns.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+        columns.AddFor(m => m.Capacity).Caption("Suburaxma qabiliyyəti (m³/san)");
+        columns.AddFor(m => m.DeviceCount).Caption("Üzərindəki hidrotexniki qurğuların sayı (ədəd)");
+        columns.AddFor(m => m.Length).Caption("Boru uzunluğu(km)");
+        columns.AddFor(m => m.ProtectionZoneArea).Caption("Mühafizə zonasının eni (m)");
+        columns.AddFor(m => m.WaterMetersCount).Caption("Su ölçən cihazların sayı(ədəd)");
+        columns.AddFor(m => m.ServiceArea).Caption("Xidmət etdiyi sahə (ha)");
+        columns.AddFor(m => m.OrderNo).SortOrder(SortOrder.Asc).SortIndex(0).Visible(false);
+        columns.Add().DataField("ServiceSib").Caption("Xidmət etdiyi siblər");
+
+    }).FilterRow(filter=>filter.Visible(false)).HeaderFilter(hf=>hf.Visible(false))
+    .SearchPanel(sp=>sp.Visible(false))
+    .Grouping(g=>g.ExpandMode(GridGroupingExpandMode.ButtonClick))
+    .GroupPanel(gp=>gp.Visible(false))
+    .FilterPanel(fp=>fp.Visible(false))
+    .Paging(p=>p.Enabled(false))
+    .Pager(pg=>pg.Visible(false))
+    .OnRowDblClick("onFilterInfoGridRowDblClick")
+    .Export(ex=>ex.Enabled(false))
+    .ColumnChooser(cc=>cc.Enabled(false))
+        .ColumnChooser(cc=>cc.Enabled(false)).MasterDetail(ms =>
+        {
+            ms.Enabled(true);
+            ms.AutoExpandAll(true);
+            ms.Template(new TemplateName("closed-channel-admin-unit-detail-template-1"));
+            ms.Option("AdminUnitId", new JS("data.IdClosedChannelAdminUnit"));
+        }).Option("layer-id", 2).Option("is-child", true).KeyExpr("IdClosedChannelAdminUnit")
+    )
+}
+
+
+
+@* Qapali suvarma sebekesinin detallari *@
+
+@using (Html.DevExtreme().NamedTemplate("closed-channel-admin-unit-detail-template-1"))
+{
+
+    @(Html.DevExtreme().DataGrid<Obj02ClosedChannelAdminUnitPipeInfo>().Columns(columns =>
+{
+    columns.AddFor(x => x.FkIdPipeType).LoadWithPipeType().Caption("Boru növü");
+    columns.AddFor(x => x.Lenght).DataType(GridColumnDataType.Number).Caption("Uzunluq(km)");
+})
+        .Configure<Obj02ClosedChannelAdminUnitPipeInfo>(controller: "ClosedChannelAdminUnitPipeInfo",loadAction: "LoadPipeTypesByAdminUnit", keyField:"IdCcAdminUnitPipeInfo", allowAdd:false, allowDelete:false, allowUpdate:false, loadParams:new { AdminUnitId = new JS("data.IdClosedChannelAdminUnit") })
+        .FilterRow(filter=>filter.Visible(false)).HeaderFilter(hf=>hf.Visible(false))
+        .SearchPanel(sp=>sp.Visible(false))
+        .Grouping(g=>g.ExpandMode(GridGroupingExpandMode.ButtonClick))
+        .GroupPanel(gp=>gp.Visible(false))
+        .FilterPanel(fp=>fp.Visible(false))
+        .Paging(p=>p.Enabled(false))
+        .Pager(pg=>pg.Visible(false))
+        .OnRowDblClick("function(e){ }")
+        .Export(ex=>ex.Enabled(false))
+        .ColumnChooser(cc=>cc.Enabled(false))
+        .Width(400)
+        )
+
+}
+
+@* Qapali suvarma sebekesinin detallari *@
+
+
+@* Kollektor drenaj sebekesi *@
+@using (Html.DevExtreme().NamedTemplate("detail-template-3"))
+{
+    @(
+    Html.DevExtreme().DataGrid<Obj03CollectorAdminUnit>().Configure(controller: "Collector", loadAction: "LoadCollectorAdminUnit", keyField: "IdCollectorAdminUnit", loadParams: new { collectorId = new JS("key") }, allowAdd: false, allowUpdate: false, allowDelete: false ).Columns(columns =>
+    {
+        columns.AddFor(m => m.Name).Caption("Kollektorun adı");
+        columns.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        columns.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        columns.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        columns.AddFor(m => m.FkIdObjectType).LoadWithObjectType().Caption("Obyektin tipi");
+        columns.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        columns.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+        columns.AddFor(m => m.DrainedArea).DataType(GridColumnDataType.Number).Caption("Drenləşdirilmiş sahə (ha)");
+        columns.AddFor(m => m.Capacity).Caption("Su sərfi (m3/san)");
+        columns.AddFor(m => m.DeviceCount).Caption("Üzərindəki hidrotexniki qurğuların sayı (ədəd)");
+        columns.AddFor(m => m.ActualLength).Caption("Uzunluq(km)");
+        columns.AddFor(m => m.Length).Caption("Coğrafi uzunluq(km)");
+        columns.AddFor(m => m.ProtectionZoneArea).Caption("Mühafizə zonasının eni (m)");
+        columns.AddFor(m => m.OrderNo).SortOrder(SortOrder.Asc).SortIndex(0).Visible(false);
+        columns.Add().Width(80).DataField("ServiceSib").DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi siblər");
+
+    }).FilterRow(filter=>filter.Visible(false)).HeaderFilter(hf=>hf.Visible(false))
+    .SearchPanel(sp=>sp.Visible(false))
+    .Grouping(g=>g.ExpandMode(GridGroupingExpandMode.ButtonClick))
+    .GroupPanel(gp=>gp.Visible(false))
+    .FilterPanel(fp=>fp.Visible(false))
+    .Paging(p=>p.Enabled(false))
+    .Pager(pg=>pg.Visible(false))
+    .OnRowDblClick("onFilterInfoGridRowDblClick")
+    .Export(ex=>ex.Enabled(false))
+    .ColumnChooser(cc=>cc.Enabled(false)).Option("layer-id", 3).Option("is-child", true).KeyExpr("IdCollectorAdminUnit")
+    )
+}

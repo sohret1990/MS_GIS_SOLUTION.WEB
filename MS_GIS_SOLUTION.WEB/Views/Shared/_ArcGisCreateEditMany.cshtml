@@ -1,0 +1,48 @@
+﻿@{
+    Layout = null;
+}
+
+<link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
+
+<script type="text/javascript">
+    var objectId = @ViewData["object-id"];
+    geometryType = '@ViewData["geometry-type"]';
+    serviceId = @ViewData["service-id"];
+    dynamicDefinitionExpression = objectId === 0 ? 'is_deleted=0' : ' is_deleted=0 and OBJECTID=' + objectId;
+    highlightSelect = null;
+
+    function onContentReady(e) {
+        $("input[name='Objectid']").val(objectId === 0 ? null : objectId);
+    }
+
+    function showMap() {
+        var popup = $("#mapPopup").dxPopup('instance');
+        popup.show();
+    }
+
+    function popupShown(e) {
+        $('#map').width($(popup).width() - 300).height($(popup).height() - 100);
+    }
+
+    function checkObjectId(e) {
+        var deferred = $.Deferred();
+        let objId = $("input[name='Objectid']").val();
+        deferred.resolve(objId !== '');
+        return deferred.promise();
+    }
+
+</script>
+
+
+
+
+@(
+    Html.DevExtreme().Popup().ID("mapPopup").FullScreen(true).ContentTemplate(@<text><div class="row">
+    <div class="col-12">        
+        <div id="map" class="vh-100 vw-100">
+            <button type="button" id="btnSaveMany" class="btn btn-secondary"> <span class="fa fa-save"></span> Yadda saxla</button>
+        </div>
+        <script src="~/arcgis/pages/arcgis_createedit_many.js" asp-append-version="true"></script>
+    </div>
+</div></text>).OnShown("popupShown")
+    )

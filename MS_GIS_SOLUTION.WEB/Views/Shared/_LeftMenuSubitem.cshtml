@@ -1,0 +1,30 @@
+﻿@model IEnumerable<ErpMenuOperation>
+
+<ul class="nav-second-level" aria-expanded="false">
+    @foreach (var mop in Model.OrderBy(x => x.OrderNo))
+    {
+        if (mop.Children.Count(x => x.MenuId == mop.MenuId) == 0)
+        {
+            <li>
+                <a onclick="localStorage.setItem('lastSelectedMenuItem', this.href)" target="@(string.IsNullOrEmpty(mop.Operation.Target)?"":mop.Operation.Target)" href="@mop.Operation.Url">
+                    @mop.Operation.Name
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link" href="javascript: void(0);">
+                    <span class="w-100">@mop.Operation.Name</span>
+                    <span class="menu-arrow">
+                        <i class="mdi mdi-chevron-right"></i>
+                    </span>
+                </a>
+                @{
+                    await Html.RenderPartialAsync("_LeftMenuSubitem", mop.Children.Where(x => x.MenuId == mop.MenuId));
+                }
+            </li>
+        }
+    }
+
+</ul>

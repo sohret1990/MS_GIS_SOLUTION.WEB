@@ -1,0 +1,60 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+
+<script type="text/javascript">
+   var root = '@Url.Action("CreateEdit", "BuildingAndConstructions")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj11BuildingsConstruction>
+    ().StateStoring(s => s
+    .Enabled(true)
+    .Type(StateStoringType.LocalStorage)
+    .StorageKey("storageBuildingsConstruction"))
+    .Columns(cols =>
+    {
+    cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+    cols.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+    cols.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Fəaliyyətdə olub-olmaması");
+    cols.AddFor(m => m.Area).Caption("Ümumi sahəsi(kvm)");
+    cols.AddFor(m => m.AreaA).Caption("Faydalı sahəsi(kvm)");
+    cols.AddFor(m => m.AreaB).Caption("Köməkçi sahəsi(kvm)");
+    cols.AddFor(m => m.ServiceArea).Caption("Xidmət etdiyi sahə(ha)");
+    cols.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+    cols.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+    cols.AddFor(m => m.ExploitationDate).Caption("İstismara verildiyi tarix(il)");
+    cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj11BuildingsConstruction>
+        ("BuildingAndConstructions", editMode: GridEditMode.Popup, keyField: "IdBuildingsConstructions")
+        .OnEditingStart("EditingStarted").OnInitNewRow("NewRowAdding").OnRowDblClick("EditingStarted")
+
+        )
+
+</div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

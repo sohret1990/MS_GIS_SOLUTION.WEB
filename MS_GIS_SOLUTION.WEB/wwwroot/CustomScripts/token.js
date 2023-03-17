@@ -1,0 +1,1 @@
+﻿var token = JSON.parse($.cookie("arcgistoken"));

@@ -1,0 +1,256 @@
+﻿@model UserViewModel
+@{
+    ViewData["Title"] = "İstifadəçi əlavəetmə və düzəliş ekranı";
+}
+
+
+<script>
+    let userId = '@Model.Id';
+
+    function onUserNameValueChanged(e) {
+        return new Promise((resolve, reject) => {
+            $.get('@Url.Action("CheckUserName")', { UserName: e.value }).done(function (data) {                
+                resolve(data.status);
+            }).catch(err=>reject(false));
+        });
+
+    }
+
+
+    function onImageSelected(e) {
+
+        let btnDeleteImage = $('#btnDeleteImage').dxButton('instance');
+        btnDeleteImage.option('visible', false);
+
+        if (e.value != undefined && e.value.length > 0) {
+
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#img-logo').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(e.value[0]);
+            btnDeleteImage.option('visible', true);
+        }
+    }
+
+    function deleteImage(e) {
+        let btnDeleteImage = $('#btnDeleteImage').dxButton('instance');
+        btnDeleteImage.option('visible', false);
+
+        $('#img-logo').attr('src', '/Content/uploads/users/agro-erp-user-no-image.png');
+        let fu = $('#fuImage').dxFileUploader('instance');
+        fu.reset();
+
+        $.get('@Url.Action("DeleteImage")', { id: @Model.Id }).done(function (data) {
+            $('#img-logo').attr('src', '/Content/uploads/user/' + data);
+        });
+    }
+
+    function onInitNewRow(e) {
+        e.data.UserId = @Model.Id??0;
+    }
+
+    function onItemRendered(e, s) {
+        e.itemElement.addClass('col-xs-12');
+        e.itemElement.addClass('col-sm-6');
+        e.itemElement.addClass('col-md-4');
+        e.itemElement.addClass('col-lg-2');
+        e.itemElement.addClass('float-left');
+    }
+
+    function setSelected(item) {
+        let id = $(item).data('id');
+        $('#lstRegions').dxList('instance').selectItem( id);
+    }
+
+    function onRegionSelectionChanged(e) {
+        let items = e.component.option('selectedItemKeys')
+        $("input[name='UserRegionIdsJson']").val(JSON.stringify(items));
+    }
+
+    function onLayerSelectionChanged(e) {
+        let items = e.component.option('selectedItemKeys')
+        $("input[name='UserLayerIdsJson']").val(JSON.stringify(items));
+    }
+
+</script>
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">İstifadəçi əlavəetmə və düzəliş ekranı</h5>
+            <div class="card-body">
+
+                <form id="frmMain" class="form-parsley" asp-controller="Users" asp-action="Save" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="UserRegionIdsJson" />
+                    <input type="hidden" asp-for="UserLayerIdsJson" />
+
+                    @using (Html.DevExtreme().ValidationGroup())
+                    {
+
+                        @(
+
+            Html.DevExtreme().Form<UserViewModel>().Items(items =>
+            {
+            items.AddGroup().ColCount(2).Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.Username).IsRequired(true).Label(l => l.Text("İstifadəçi adı")).ValidationRules(rule=>rule.AddAsync().ValidationCallback("onUserNameValueChanged").Message("Eyni adlı istifadəçi sistemdə mövcuddur!")).Editor(e => e.TextBox().IsValid(false).ElementAttr("autocomplete", false).OnValueChanged("onUserNameValueChanged").Disabled(Model.Id != 0));
+                groupItems.AddSimpleFor(m => m.Mail).IsRequired(true).Editor(e => e.TextBox().Mode(TextBoxMode.Email)).Label(l => l.Text("E-poçt"));
+                groupItems.AddSimpleFor(m => m.Pass).IsRequired(true).Editor(e => e.TextBox().Mode(TextBoxMode.Password)).Label(l => l.Text("Şifrə")).Visible(Model.Id == 0);
+
+
+                groupItems.AddSimpleFor(m => m.UserLastName).Editor(e => e.TextBox().Mode(TextBoxMode.Text));
+
+                groupItems.AddSimpleFor(m => m.ConfirmPassword).IsRequired(true).Editor(e => e.TextBox().Mode(TextBoxMode.Password)).Label(l => l.Text("Şifrənin təkrarı")).Visible(Model.Id == 0);
+                groupItems.AddSimpleFor(m => m.UserFirstName).Editor(e => e.TextBox().Mode(TextBoxMode.Text));
+                groupItems.AddSimpleFor(m => m.DefaultOperationId).Label(l => l.Text("Ana səhifə")).Editor(e => e.SelectBox().ConfigureSelectBox("Users", "LoadOperationList"));
+
+                groupItems.AddSimpleFor(m => m.UserMiddleName).Editor(e => e.TextBox().Mode(TextBoxMode.Text));
+            }).ColSpan(2);
+
+            items.AddGroup().ColCount(2).Items(groupItems =>
+            {
+                groupItems.AddSimpleFor(m => m.Description).Label(l => l.Text("Qeyd")).Editor(e => e.TextArea().Height(100)).ColSpan(2);
+            }).ColSpan(2);
+
+            items.AddGroup().ColSpan(2).Template(@<text>
+                @(
+           Html.AddButtonPanel(Model.ButtonPanel)
+)
+                </text>);
+
+                items.AddGroup().Caption("Digər məlumatlar").Items(groupItems =>
+                {
+                    groupItems.AddTabbed().Tabs(tabs =>
+                    {
+                        tabs.Add().Title("Şəkil").Template(new TemplateName("imageTemplate"));
+                        tabs.Add().Disabled(Model.Id==0).Title("Rollar").Template(new TemplateName("roleTemplate"));
+                        tabs.Add().Disabled(Model.Id==0).Title("Rayonlar").Template(new TemplateName("regionTemplate"));
+                        tabs.Add().Disabled(Model.Id==0).Title("Laylar").Template(new TemplateName("layerTemplate"));
+                    }).ColSpan(2);
+
+
+                }).ColSpan(2);
+
+
+            })
+            .FormData(Model).ColCount(2)
+
+    )
+
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@using (Html.DevExtreme().NamedTemplate("imageTemplate"))
+{
+
+    <div class="row">
+        <div class="col-12">
+
+            <table>
+                <tr>
+                    <td class="text-center">
+                        @(
+            Html.DevExtreme().Button().Icon("close")
+            .ID("btnDeleteImage")
+            .StylingMode(ButtonStylingMode.Outlined)
+            .Type(ButtonType.Danger)
+            .OnClick("deleteImage")
+            .Visible(Model.Id != 0 && Model.ImagePath != "agro-erp-user-no-image.png")
+                        )
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <img id="img-logo" style="max-height:150px;max-width:150px;border:1px solid #808080" class="img-fluid" src="/Content/uploads/users/@Model.ImagePath" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-12">
+            @(
+Html.DevExtreme().FileUploader().AllowCanceling(true)
+.ID("fuImage")
+   .AllowedFileExtensions(new[] { ".jpg", ".jpeg", ".gif", ".png" })
+   .UploadUrl(Url.Action("UploadImage"))
+   .UploadMethod(UploadHttpMethod.POST)
+   .UploadMode(FileUploadMode.UseForm)
+   .Width(120)
+   .Name("image")
+   .Option("class", "text-center")
+   .OnValueChanged("onImageSelected")
+   .LabelText("Loqo").Option("class", "ml-3")
+    )
+
+
+
+
+        </div>
+    </div>
+}
+
+@using (Html.DevExtreme().NamedTemplate("roleTemplate"))
+{
+    <div class="row">
+        <div class="col-12">
+
+            @(
+
+    Html.DevExtreme().DataGrid<ErpUserInRole>().Columns(columns =>
+    {
+        columns.AddFor(m => m.RoleId).LoadLookupSource("Role","LoadRole");
+        columns.AddFor(m => m.Description);
+        columns.AddFor(m => m.Status).DataType(GridColumnDataType.Number).Caption("Status")
+                            .CellTemplate(@<text>@(Html.DevExtreme().CheckBox().ReadOnly(true).Value(new JS("data.Status || 0")))</text>)
+                            .EditCellTemplate(@<text>@Html.DevExtreme().CheckBox().ID("Status").Value(new JS("data.Status || 0")).OnValueChanged("function(e) { setValue(e.value===true?1:0); }")</text>);
+    })
+    .Configure("UserInRole", height: 230, loadParams: new { UserId = Model.Id==0?-1:Model.Id })
+    .OnInitNewRow("onInitNewRow")
+
+    )
+
+        </div>
+    </div>
+
+}
+
+@using (Html.DevExtreme().NamedTemplate("regionTemplate"))
+{
+    <div class="row">
+        <div class="col-12">
+
+                @(
+        Html.DevExtreme().List().ID("lstRegions").SelectedItemKeys(Model.UserRegionIds).NextButtonText("yüklə").DataSource(ds=>ds.Mvc().Key("Id").Controller("UserRegions").LoadAction("LoadRegions")).DataSourceOptions(dso=>dso.Paginate(false)).DisplayExpr("Name").KeyExpr("Id").SelectAllMode(SelectAllMode.AllPages).SelectionMode(ListSelectionMode.All).ShowSelectionControls(true).OnItemRendered("onItemRendered").OnSelectionChanged("onRegionSelectionChanged")////.ItemTemplate(new TemplateName("listItemTemplate"))
+        )
+
+        </div>
+    </div>
+
+}
+
+
+@using (Html.DevExtreme().NamedTemplate("layerTemplate"))
+{
+    <div class="row">
+        <div class="col-12">
+
+                @(
+        Html.DevExtreme().List().ID("lstlayers").SelectedItemKeys(Model.UserLayerIds).NextButtonText("yüklə").DataSource(ArcGisServiceList.Layers).DisplayExpr("Name").KeyExpr("Id").SelectAllMode(SelectAllMode.AllPages).SelectionMode(ListSelectionMode.All).ShowSelectionControls(true).OnItemRendered("onItemRendered").OnSelectionChanged("onLayerSelectionChanged")////.ItemTemplate(new TemplateName("listItemTemplate"))
+        )
+
+        </div>
+    </div>
+
+}

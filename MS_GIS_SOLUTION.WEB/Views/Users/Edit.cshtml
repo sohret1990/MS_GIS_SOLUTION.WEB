@@ -1,0 +1,157 @@
+﻿@model UserViewModel
+@{
+    ViewData["Title"] = Model.Id <= 0 ? "Yeni istifadəçi" : "Düzəliş";
+}
+
+
+
+@section Scripts
+{
+
+    <script>
+        function ShowImage(e) {
+            if (e.value.length) {
+                e.element.find(".dx-fileuploader-upload-button").hide();
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#imgUser').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(e.value[0]);
+            }
+        }
+
+        function OptionChanged() {
+            $('#imgUser').attr('src', "/uploads/images/user/noimage.png");
+            $('#btnDeletePhoto').hide();
+        }
+
+        function RemovePhoto(e) {
+            $(function () {
+                var result = DevExpress.ui.dialog.confirm("<i>Əminsinizmi?</i>", "Silmə əməliyyatı");
+                result.done(function (dialogResult) {
+                    if (dialogResult) {
+                        $('#imgUser').attr('src', "/uploads/images/user/noimage.png");
+                        var res1 = callAjax('@Url.Action("DeleteUserImage", "User")',
+                            { id: @Model.Id });
+                        $('#imgUser').attr('src', "/uploads/images/user/noimage.png");
+                        $('#btnDeletePhoto').hide();
+                        $('#Logo').val(null);
+                    }
+                });
+            })
+        }
+
+        function OnPasswordChange(s, e) {
+          
+        }
+
+    </script>
+
+}
+
+
+
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-outlined style-primary">
+            <div class="card-body">
+                <form asp-action="Save" method="post" class="tx-form" enctype="multipart/form-data">
+                    <input asp-for="Id" type="hidden" />
+                    <input asp-for="ImagePath" type="hidden" />
+                    @using (Html.DevExtreme().ValidationGroup())
+                    {
+                        @(
+                            Html.DevExtreme().Form<UserViewModel>().Items(items =>
+                            {
+
+                                 items.AddGroup().Caption(Model.Id <= 0 ? "Yeni istifadəçi" : "İstifadəçi məlumatları üzərində düzəliş").Template(@<text>
+                                            <div class="col-md-offset-4 col-md-4">
+                                                <div class="card card-outlined style-primary" style="width:400px">
+                                                    <div class="card-body center" style="width:400px">
+                                                        <table>
+                                                            <tr>
+                                                                <td>
+                                                                    @(Html.DevExtreme().FileUploader().ID("fileUploaderContainer").Name("file")
+                                                          .Accept("image/*")
+                                                          .Multiple(false)
+                                                          .UploadMode(FileUploadMode.UseButtons)
+                                                          .UploadUrl(Url.Action("UploadUserImage", "User", new { id = Model.Id }))
+                                                          .SelectButtonText("Şəkil yüklə")
+                                                          .LabelText("")
+                                                          .OnValueChanged("ShowImage")
+                                                          .OnOptionChanged("OptionChanged")
+                                                                    )
+                                                                </td>
+                                                                <td>
+                                                                    <img id="imgUser" style="max-height:100px;" src="/uploads/images/user/@(Model.ImagePath??"noimage.png")" class="img-rounded" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2" align="right" style="padding-top:10px">
+                                                                    @Html.DevExtreme().Button().Type(ButtonType.Danger).StylingMode(ButtonStylingMode.Outlined).Text("Sil").Icon("remove").ID("btnDeletePhoto").OnClick("RemovePhoto").Visible(Model.ImagePath != null ? true : false)
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                </text>);
+
+                            items.AddGroup().ColCount(2).Items(x =>
+                            {
+                                x.AddSimpleFor(m => m.Username).Label(l => l.Text("İstifadəçi adı")).Editor(e => e.TextBox());
+
+                                x.AddSimpleFor(m => m.Pass).Label(l => l.Text("Şifrə")).Editor(e => e.TextBox().Mode(TextBoxMode.Password).ID("txtPassword").OnValueChanged("OnPasswordChange")).IsRequired(Model.Id == 0);
+
+                                x.AddSimpleFor(m => m.Mail).Label(l => l.Text("E-poçt adresi")).Editor(e => e.TextBox().Mode(TextBoxMode.Email));
+
+                                x.AddSimpleFor(m => m.ConfirmPassword).Label(l => l.Text("Şifrənin təkrarı")).Editor(e => e.TextBox().Mode(TextBoxMode.Password).ID("txtConfirmPassword")).IsRequired(Model.Id == 0);
+
+                                x.AddSimpleFor(m => m.EmployeeId).Label(l => l.Text("Personal")).Editor(e => e.SelectBox().DataSource(d => d.Mvc().Area("HRM").Controller("Employee").LoadAction("LoadEmployeeList").Key("Id")).ValueExpr("Id").DisplayExpr("Name"));
+
+                                x.AddSimpleFor(m => m.DefaultOperationId).Label(l => l.Text("Əsas səhifə")).Editor(e => e.SelectBox().DataSource(d => d.Mvc().Area("ERP").Controller("Operation").LoadAction("LoadOperationList").Key("Id")).ValueExpr("Id").DisplayExpr("Name"));
+
+                                x.AddSimpleFor(m => m.IsApproved).Editor(editor => editor.CheckBox()).Label(e => e.Text("Təsdiq edilib"));
+
+                                x.AddSimpleFor(m => m.Description).Label(l => l.Text("Qeyd")).Editor(e => e.TextArea().Height(100));
+
+                                @*x.AddGroup().Template(@<text>@Html.AddButtonPanel(Model.ButtonPanel)</text>).ColSpan(2);*@
+
+});
+}).FormData(Model)
+                        )
+                    }
+                </form>
+
+
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+        @*<em class="text-caption">Outlined Card with icon</em>*@
+    </div><!--end .col -->
+</div>
+
+
+@*<script>
+        function ShowImage(e) {
+            if (e.value.length) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#imgUser').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(e.value[0]);
+            }
+        }
+
+    </script>*@
+
+@*@if (result!=null)
+    {
+        <script type="text/javascript">
+            $(document).ready(function () {
+                showAlert('@result.Message', '@result.Title', null);
+            });
+        </script>
+    }*@

@@ -1,0 +1,147 @@
+﻿@model Obj02ClosedChannelViewModel
+@{
+    ViewData["Title"] = (Model.IdClosedChannel <= 0 || Model.IdClosedChannel == null) ? "Yeni qapalı suvarma şəbəkəsi" : "Qapalı suvarma şəbəkəsi məlumatları üzərində düzəliş";
+}
+
+@section Scripts
+    {
+    <script type="text/javascript">
+
+        function onContentReady(e) {
+
+        }
+
+        function EditingStarted(e) {
+            e.cancel = true;
+            location.href = '@Url.Action("CreateEditClosedChannelAdminUnit", "ClosedChannel")' + '?id=' + e.key.IdClosedChannelAdminUnit + '&closedchannelId=' + '@Model.IdClosedChannel';
+        }
+
+
+        function NewRowAdding(e) {
+            location.href = '@Url.Action("CreateEditClosedChannelAdminUnit", "ClosedChannel")' + '?closedchannelId=' + '@Model.IdClosedChannel';
+            e.component.cancelAll();
+            window.setTimeout(function () { e.component.cancelEditData(); }, 0);
+        }
+
+        function getSourceType() {
+            return $('#SourceType').dxSelectBox('instance').option('value');
+        }
+
+        function onSourceTypeValueChange(e) {
+            $('#Source').dxSelectBox('instance').option('value', null);
+            $('#Source').dxSelectBox('instance').getDataSource().reload();
+        }
+
+        function GetNotification() {
+            if (@Model.FromSave === 1) {
+                notify('success', "Digər məlumatları daxil edə bilərsiniz!", 5000, null);
+            }
+        }
+
+        $(document).ready(function () {
+
+            GetNotification();
+
+        });
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-outlined style-primary">
+            <!--end .card-head -->
+            <div class="card-body">
+                <Form asp-action="Save" method="post" onsubmit="return checkBeforeSubmit()" class="tx-form" enctype="multipart/form-data">
+                    <input asp-for="IdClosedChannel" type="hidden" />
+                    <input required asp-for="Objectid" type="hidden" />
+                    @using (Html.DevExtreme().ValidationGroup())
+                    {
+                        @(Html.DevExtreme().Form<Obj01ChannelViewModel>().ID("form").ReadOnly(Model.Mode).ShowValidationSummary(false).Items(items =>
+                                        {
+                                        items.AddGroup().CssClass("first-group").Caption((Model.IdClosedChannel <= 0 || Model.IdClosedChannel == null) ? "Yeni qapalı suvarma şəbəkəsi" : "Qapalı suvarma şəbəkəsi məlumatları üzərində düzəliş").ColCount(4).Items
+                                (x =>
+                                {
+                                x.AddSimpleFor(m => m.Name).Editor(e => e.TextBox()).Label(e => e.Text("Ad")).IsRequired(true);
+                                x.AddSimpleFor(m => m.FkIdObjectType).Editor(e => e.SelectBox().FillWithObjectTypeByGroup(loadParams: new { groupId = 2 })).Label(e => e.Text("Obyektin tipi"));
+                                x.AddSimpleFor(m => m.FkIdAppointment).Editor(e => e.SelectBox().FillWithAppointment(new { groupId = 6 })).Label(e => e.Text("Təyinatı"));
+                                x.AddSimpleFor(m => m.FkIdSourceType).Editor(e => e.SelectBox().ID("SourceType").OnValueChanged("onSourceTypeValueChange").FillWithSourceType()).Label(e => e.Text("Su mənbəyi növü"));
+                                x.AddSimpleFor(m => m.FkIdSource).Editor(e => e.SelectBox().ID("Source").FillWithSource(new { sourceType = new JS("getSourceType") })).Label(e => e.Text("Su mənbəyi"));
+                                x.AddSimpleFor(m => m.ExploitationDate).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+.ShowClearButton(true).Min(0)).Label(e => e.Text("İstismara verildiyi tarix(il)"));
+                                x.AddSimpleFor(m => m.Description).Editor(editor => editor.TextArea()).Label(e => e.Text("Qeyd")).ColSpan(2);
+                                x.AddGroup().Template(@<text>@Html.AddButtonPanel(Model.ButtonPanel)</text>).ColSpan(4);
+                                });
+                                    }).FormData(Model))
+                    }
+
+                    @Html.DevExtreme().TabPanel().ID("tabs").Loop(true).FocusStateEnabled(true).DeferRendering(false).Items(x =>
+                    {
+                        x.Add().Title("Digər məlumatlar").Icon("/assets/images/regions.png").Template(new TemplateName("adminunit-grid"));
+                    })
+
+                    @using (Html.DevExtreme().NamedTemplate("adminunit-grid"))
+                    {
+                        <div class="row">
+                            <div class="col-12 p-3">
+                                @(Html.DevExtreme().DataGrid<Obj02ClosedChannelAdminUnit>()
+                                                                  .ID("gridChannelAdminUnitContainer")
+                                                                  .DataSource(Model.Obj02ClosedChannelAdminUnit)
+                                                                  .WordWrapEnabled(true)
+                                                                  .Export(cnf => cnf.Enabled(true))
+                .LoadPanel(e => e.Enabled(true))
+                .SearchPanel(searchPanel => searchPanel
+                .Visible(true)
+                .Width(150)
+                .Placeholder("Axtar..."))
+                .StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageAdminUnitClosedChannel"))
+                .AllowColumnReordering(true)
+                .GroupPanel(p => p.Visible(true))
+                .Grouping(g => g.AutoExpandAll(false))
+                .ShowBorders(true)
+                .FilterRow(filterRow => filterRow
+                .Visible(true)
+                .ApplyFilter(GridApplyFilterMode.Auto)).Disabled(Model.IdClosedChannel > 0 ? false : true).Disabled(Model.Mode)
+                .ColumnChooser(chooser => chooser.Enabled(true))
+                .AllowColumnResizing(true)
+                .ColumnResizingMode(ColumnResizingMode.Widget)
+                .Paging(p => p.PageSize(10))
+                .Pager(p => p.ShowInfo(true)
+                .InfoText("Səhifə {0}/{1} ({2} məlumat)")
+                .ShowPageSizeSelector(true)
+                .ShowNavigationButtons(true))
+                .HeaderFilter(f => f.Visible(true))
+                .Width("100%")
+                .Columns(columns =>
+                {
+                    columns.AddFor(m => m.OrderNo).Caption("Sıra nömrəsi");
+                    columns.AddFor(m => m.FkIdAdminUnit).Caption("Rayon").LoadWithAdminUnit();
+                    columns.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                    columns.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+                    columns.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                    columns.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                    columns.AddFor(m => m.ProtectionZoneArea).Caption("Mühafizə sahəsi(ha)");
+                    columns.AddFor(m => m.Length).Caption("Coğrafi uzunluq(km)");
+                    columns.AddFor(m => m.ServiceArea).Caption("Xidmət etdiyi sahə(ha)");
+                    columns.AddFor(m => m.DeviceCount).Caption("Üzərindəki qurğuların sayı");
+                    columns.AddFor(m => m.AdditionalAdminUnit).Caption("Kənd-Qəsəbə");
+                })
+                  .Editing(z => z.AllowAdding(Model.IdClosedChannel > 0 ? true : false).AllowDeleting(true)
+                  .AllowUpdating(true)
+                  .UseIcons(true))
+                  .ShowBorders(true)
+                  .ShowRowLines(true)
+                  .OnEditingStart("EditingStarted")
+                  .OnInitNewRow("NewRowAdding")
+                    )
+                            </div>
+                        </div>
+                    }
+                </Form>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+        @*<em class="text-caption">Outlined Card with icon</em>*@
+    </div><!--end .col -->
+</div>

@@ -1,0 +1,64 @@
+﻿@{
+    Layout = null;
+}
+
+
+<link href="~/node_modules/@@devexpress/analytics-core/dist/css/dx-analytics.common.css" rel="stylesheet" />
+<link href="~/node_modules/@@devexpress/analytics-core/dist/css/dx-analytics.light.css" rel="stylesheet" />
+<link href="~/node_modules/@@devexpress/analytics-core/dist/css/dx-querybuilder.css" rel="stylesheet" />
+<link href="~/node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css" rel="stylesheet" />
+<link href="~/node_modules/devexpress-reporting/dist/css/dx-reportdesigner.css" rel="stylesheet" />
+
+@*<script src="~/node_modules/knockout/build/output/knockout-latest.js"></script>*@
+
+@*<script src="~/node_modules/devextreme/dist/js/dx.all.js"></script>*@
+
+<!-- Optionally (for intelligent code completion in the Expression Editor and Filter Editor) -->
+<script src="~/node_modules/ace-builds/src/ace.js"></script>
+<script src="~/node_modules/ace-builds/src/ext-language_tools.js"></script>
+<script src="~/node_modules/ace-builds/src/snippets/text.js"></script>
+<!--  -->
+
+<!-- If your application contains the Report Designer or both the Report Designer and Document Viewer -->
+<script src="~/node_modules/@@devexpress/analytics-core/dist/js/dx-analytics-core.js"></script>
+<script src="~/node_modules/@@devexpress/analytics-core/dist/js/dx-querybuilder.js"></script>
+<script src="~/node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.js"></script>
+<script src="~/node_modules/devexpress-reporting/dist/js/dx-reportdesigner.js"></script>
+
+<script type="text/javascript">
+    function customizeMenuAction(s, e) {
+
+        // Get the "Highlight Editing Fields" action and hide it.
+        var highlightEditingFieldsAction = e.GetById(DevExpress.Reporting.Viewer.ActionId.HighlightEditingFields);
+        if (highlightEditingFieldsAction)
+            highlightEditingFieldsAction.visible = false;
+
+        // Add a new action.
+        var interval;
+        var selected = ko.observable(false);
+        e.Actions.push({
+            text: "Run Slide Show",
+            imageTemplateName: "slideshow",
+            visible: true,
+            disabled: false,
+            selected: selected,
+            hasSeparator: false,
+            hotKey: { ctrlKey: true, keyCode: "Z".charCodeAt(0) },
+            clickAction: function () {
+                if (selected()) {
+                    clearInterval(interval);
+                    selected(false);
+                    return;
+                }
+                var model = s.GetPreviewModel();
+                if (model) {
+                    selected(true);
+                    interval = setInterval(function () {
+                        var pageIndex = model.GetCurrentPageIndex();
+                        model.GoToPage(pageIndex + 1);
+                    }, 2000);
+                }
+            }
+        });
+    }
+</script>

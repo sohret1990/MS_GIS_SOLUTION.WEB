@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = ViewData["PageTitle"];
+    PropertyInfo[] properties = (PropertyInfo[])ViewData["Properties"];
+    List<GridComboColumn> gridComboColumns = (List<GridComboColumn>)ViewData["ComboColumns"];
+
+    var dgb = Html.DevExtreme().DataGrid();
+
+
+    foreach (PropertyInfo property in properties)
+    {
+        dgb.Columns(columns =>
+        {
+        GridColumnDataType dataType = GridColumnDataType.String;
+        switch (property.PropertyType.FullName)
+        {
+            case "System.Int32":
+            case "System.Byte":
+                dataType = GridColumnDataType.Number;
+                break;
+            case "System.DateTime":
+                dataType = GridColumnDataType.Date;
+                break;
+            default:
+                break;
+        }
+
+        var col = columns.Add().DataField(property.Name).DataType(dataType);
+
+        if (property.PropertyType.FullName == "System.Byte")
+        {
+            col.CellTemplate(@<text>
+                     @(
+                           Html.DevExtreme().CheckBox().Value(new JS($"data.{property.Name}==1")).Disabled(true)
+                                    )
+                </text>).CellTemplate(@<text>
+                    @(
+                           Html.DevExtreme().CheckBox().Value(new JS($"data.{property.Name}==1")).OnValueChanged("function(e){ return e.value==true?1:0 }")
+                                    )
+                </text>);
+
+            }
+
+            var gridColumn = gridComboColumns.FirstOrDefault(x => x.ColumnName == property.Name);
+
+            if (gridColumn!=null)
+            {
+                col.LoadLookupSource(controller: gridColumn.LoadController, action: gridColumn.LoadAction, key: gridColumn.Key, valueExpr: gridColumn.ValueField, displayExpr: gridColumn.DisplayField);
+            }
+
+            if (property.GetCustomAttribute<DisplayNameAttribute>() != null)
+            {
+                col.Caption(property.GetCustomAttribute<DisplayNameAttribute>().DisplayName);
+            }
+
+        });
+
+    }
+
+    dgb.Configure(ViewContext.RouteData.Values["controller"].ToString(), height: properties.Length * 50 + 80,keyField: ViewData["KeyField"].ToString()).ConfigureGridExport(fileName: ViewContext.RouteData.Values["controller"].ToString()).StateStoring(store=>store.Enabled(true).StorageKey(ViewContext.RouteData.Values["controller"].ToString()).Type(StateStoringType.LocalStorage));
+
+
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+
+
+                @(
+        dgb
+                )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>
+

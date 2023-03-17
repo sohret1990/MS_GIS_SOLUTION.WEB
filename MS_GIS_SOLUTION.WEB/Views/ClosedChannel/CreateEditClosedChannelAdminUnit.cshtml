@@ -1,0 +1,96 @@
+﻿@model Obj02ClosedChannelAdminUnitViewModel
+@{
+    ViewData["Title"] = Model.IdClosedChannelAdminUnit <= 0 ? "Yeni rayon" : "Rayon məlumatları üzərində düzəliş";
+}
+
+<partial name="_ArcgisCreateEdit" view-data='@new ViewDataDictionary(ViewData) { { "service-id", 2 }, { "geometry-type", "polyline" }, {"object-id", Model.Objectid ?? 0 } }' />
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="SaveClosedChannelAdminUnit" onsubmit="return checkBeforeSubmit()" method="post" class="tx-form">
+                    <input asp-for="IdClosedChannelAdminUnit" type="hidden" />
+                    <input asp-for="FkIdClosedChannel" type="hidden" />
+                    @using (Html.DevExtreme().ValidationGroup())
+                    {
+                        @(Html.DevExtreme().Form<Obj02ClosedChannelAdminUnitViewModel>().ID("adminunitform").ReadOnly(Model.Mode).ShowValidationSummary(false).Items(items =>
+                    {
+                    items.AddGroup().Caption
+                          (Model.Mode == true ? "Ətraflı məlumat"
+                        : (Model.IdClosedChannelAdminUnit <= 0 ? (Model.Name + " adlı qapalı suvarma şəbəkəsinə aid yeni məlumat")
+                        : (Model.Name + " adlı qapalı suvarma şəbəkəsinin məlumatları üzərində düzəliş"))).ColCount(2).Items(x =>
+                        {
+                            x.AddSimpleFor(m => m.FkIdAdminUnit).Editor(e => e.SelectBox().ID("AdminUnit").OnValueChanged("onAdminUnitValueChange").FillWithAdminUnit()).Label(e => e.Text("Rayon"));
+                            x.AddSimpleFor(m => m.OrderNo).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+        .ShowClearButton(true).Min(0)).Label(e => e.Text("Sıra nömrəsi"));
+                            x.AddSimpleFor(m => m.FkIdOwner).Editor(e => e.SelectBox().FillWithOwner()).Label(e => e.Text("Mülkiyyətçisi"));
+                            x.AddSimpleFor(m => m.FkIdOwnershipType).Editor(e => e.SelectBox().FillWithOwnershipType()).Label(e => e.Text("Mülkiyyət növü"));
+                            x.AddSimpleFor(m => m.FkIdActivityStatus).Editor(e => e.SelectBox().FillWithActivityStatus()).Label(e => e.Text("Fəaliyyətdə olub-olmaması"));
+                            x.AddSimpleFor(m => m.FkIdTechnicalStatus).Editor(e => e.SelectBox().FillWithTechnicalStatus()).Label(e => e.Text("Texniki vəziyyət"));
+                            x.AddSimpleFor(m => m.WaterMetersCount).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+ .ShowClearButton(true).Min(0)).Label(e => e.Text("Su ölçən cihazların sayı (ədəd)"));
+                            x.AddSimpleFor(m => m.ServiceArea).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+            .ShowClearButton(true).Min(0)).Label(e => e.Text("Xidmət etdiyi sahə(ha)"));
+                            x.AddSimpleFor(m => m.Length).Editor(editor => editor.NumberBox().ShowSpinButtons(true).ReadOnly(true)
+                   .ShowClearButton(true).Min(0)).Label(e => e.Text("Coğrafi uzunluq(km)"));
+                            x.AddSimpleFor(m => m.DeviceCount).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                            .ShowClearButton(true).Min(0)).Label(e => e.Text("Üzərindəki qurğuların sayı"));
+                            x.AddSimpleFor(m => m.WUAIdList).Editor(e => e.TagBox().ID("WUAs").LoadWithWaterUseAssociationByAdminUnit(new { AdminUnitId = new JS("getAdminUnit") })).Label(e => e.Text("Xidmət etdiyi SİB-lər"));
+                            x.AddSimpleFor(m => m.AdditionalAdminUnit).Editor(editor => editor.TextBox()).Label(e => e.Text("Kənd-Qəsəbə"));
+                            x.AddSimpleFor(m => m.Objectid).Editor(e => e.NumberBox().Visible(false)).Label(x => x.Visible(false));
+                            x.AddGroup().Template(@<text>@Html.AddButtonPanel(Model.ButtonPanel)</text>).ColSpan(2);
+
+                    });
+                    }).FormData(Model).ShowValidationSummary(true))
+                    }
+                    @Html.DevExtreme().TabPanel().ID("tabs").Loop(true).FocusStateEnabled(true).DeferRendering(false).Items(x =>
+{
+    x.Add().Title("Borular").Template(new TemplateName("pipetypes-grid"));
+})
+                    @using (Html.DevExtreme().NamedTemplate("pipetypes-grid"))
+                    {
+                        <div class="row">
+                            <div class="col-12 p-3">
+                                @(Html.DevExtreme().DataGrid<Obj02ClosedChannelAdminUnitPipeInfo>()
+                            .ID("gridPipeInfoContainer").StateStoring(s => s.Enabled(true).Type(StateStoringType.LocalStorage).StorageKey("PipeInfoContainer"))
+                            .DataSource(Model.Obj02ClosedChannelAdminUnitPipeInfo).Export(cnf => cnf.Enabled(true)).LoadPanel(l => l.Enabled(true))
+                            .Columns(columns =>
+                            {
+                                columns.AddFor(x => x.FkIdPipeType).LoadWithPipeType().Caption("Boru tipi");
+                                columns.AddFor(x => x.Lenght).DataType(GridColumnDataType.Number).Caption("Uzunluq(km)");
+                            })
+.Configure<Obj02ClosedChannelAdminUnitPipeInfo>(controller: "ClosedChannelAdminUnitPipeInfo").OnInitNewRow("function(e) { e.data.FkIdClosedChannelAdminUnit =" + Model.IdClosedChannelAdminUnit + "; }").DataSource(x => x.Mvc().Controller("ClosedChannelAdminUnitPipeInfo").LoadAction("LoadPipeTypesByAdminUnit")
+                            .LoadMethod("GET")
+                            .InsertAction("Edit")
+                            .InsertMethod("PUT")
+                            .UpdateAction("Edit")
+                            .UpdateMethod("PUT")
+                            .DeleteAction("Delete")
+                            .DeleteMethod("DELETE")
+                            .Key("IdCcAdminUnitPipeInfo").LoadParams(new { AdminUnitId = Model.IdClosedChannelAdminUnit })).Editing(z => z.AllowAdding(Model.IdClosedChannelAdminUnit > 0 ? true : false).AllowDeleting(true).UseIcons(true).AllowUpdating(true).Form(frm => frm.ColCount(2)).Mode(GridEditMode.Popup)
+              .Popup(popup => popup.ShowTitle(true)
+              .OnShowing("setPopupTitle").Height(170).Width(550)
+              .ShowCloseButton(true)).RefreshMode(GridEditRefreshMode.Full)).Disabled(Model.Mode))
+                            </div>
+                        </div>
+                    }
+                </form>
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>
+
+
+<script type="text/javascript">
+    function getAdminUnit() {
+        return $('#AdminUnit').dxSelectBox('instance').option('value');
+    }
+
+    function onAdminUnitValueChange(e) {
+
+        $('#WUAs').dxTagBox('instance').option('value', []);
+        $('#WUAs').dxTagBox('instance').getDataSource().reload();
+        $('#WUAs').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+</script>

@@ -1,0 +1,27 @@
+﻿
+@{
+    ViewData["Title"] = "İstifadəçilərin siyahısı";
+}
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">İstifadəçilərin siyahısı</h5>
+            <div class="card-body">
+                @(
+
+        Html.DevExtreme().DataGrid<SUser>().ID("gridUsers").Columns(columns=>
+        {
+            columns.AddFor(m => m.UserName);
+            columns.AddFor(m => m.DefaultOperationId).LoadLookupSource("Users", "LoadOperationList");
+            columns.AddFor(m => m.Mail);
+        })
+        .Configure("Users", keyField: "IdUser")
+        .OnInitNewRow("function(e){e.cancel=true;window.location.href = '"+Url.Action("CreateEdit")+"/0'; e.component.cancelEdit();}")
+        .OnEditingStart("function(e){e.cancel=true;window.location.href = '" + Url.Action("CreateEdit") + "/'+e.data.IdUser; e.component.cancelEdit();}")
+    )
+            </div>
+        </div>
+    </div>
+</div>

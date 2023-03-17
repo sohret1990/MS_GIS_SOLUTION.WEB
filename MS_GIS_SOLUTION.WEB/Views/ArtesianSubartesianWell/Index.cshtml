@@ -1,0 +1,69 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+<script type="text/javascript">
+    var root = '@Url.Action("CreateEdit", "ArtesianSubartesianWell")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj07ArtesianSubartesianWell>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageArtesianSubartesianWell"))
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.FkAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        cols.AddFor(m => m.FkIdWaterUseAssociation).LoadWithWaterUseAssociation().Caption("Xidmət etdiyi SİB-in adı");
+        cols.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        cols.AddFor(m => m.No).DataType(GridColumnDataType.String).Caption("Nömrəsi (reper)");
+        cols.AddFor(m => m.PumpModel).DataType(GridColumnDataType.String).Caption("Nasosun markası");
+        cols.AddFor(m => m.Productivity).DataType(GridColumnDataType.Number).Caption("Məhsuldarlığı(l/s)");
+        cols.AddFor(m => m.FkIdArtesianType).LoadWithArtesianType().Caption("Tipi");
+        cols.AddFor(m => m.FkIdAppointment).LoadWithAppoitment().Caption("Təyinatı");
+        cols.AddFor(m => m.ServiceArea).DataType(GridColumnDataType.Number).Caption("Xidmət etdiyi sahə(ha)");
+        cols.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        cols.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+        cols.AddFor(m => m.FkIdProtectionType).LoadWithProtectionType().Caption("Mühafizə növü");
+        cols.AddFor(m => m.ProtectionZoneArea).DataType(GridColumnDataType.Number).Caption("Mühafizə sahəsi(ha)");
+        cols.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        cols.AddFor(m => m.ExploitationDate).DataType(GridColumnDataType.Number).Caption("İstismara verildiyi tarix(il)");
+        cols.AddFor(m => m.Depth).DataType(GridColumnDataType.Number).Caption("Dərinliyi (m)");
+        cols.AddFor(m => m.ScadaInfo).Lookup(gl => gl.DataSource(new JS("[{ Value:1, text: 'Var'},{Value:2, text: 'Yoxdur' }]")).DisplayExpr("text").ValueExpr("Value")).Caption("SCADA sistemi");
+        cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj07ArtesianSubartesianWell>
+        ("ArtesianSubartesianWell", editMode: GridEditMode.Popup, keyField: "IdArtesianSubartesianWell").OnEditingStart("EditingStarted")
+.OnInitNewRow("NewRowAdding")
+.OnRowDblClick("EditingStarted")
+
+
+        )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

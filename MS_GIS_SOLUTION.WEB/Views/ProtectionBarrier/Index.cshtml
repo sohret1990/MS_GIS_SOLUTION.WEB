@@ -1,0 +1,63 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+
+<script type="text/javascript">
+   var root = '@Url.Action("CreateEdit", "ProtectionBarrier")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj10ProtectionBarrier>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageProtectionBarrier"))
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.FkIdAdminUnit).LoadWithAdminUnit().Caption("Yerləşdiyi ərazi");
+        cols.AddFor(m => m.FkIdRiver).LoadWithRiver().Caption("Çayın adı");
+        cols.AddFor(m => m.ExploitationDate).Caption("İstismara verildiyi tarix(il)");
+        cols.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+        cols.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+        cols.AddFor(m => m.FkIdAppointment).LoadWithAppoitment().Caption("Təyinatı");
+        cols.AddFor(m => m.FkIdBarrierType).LoadWithBarrierType().Caption("Bəndin növü");
+        cols.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+        cols.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+
+        cols.AddFor(m => m.BarrierHeight).DataType(GridColumnDataType.Number).Caption("Hündürlük (m)");
+        cols.AddFor(m => m.BarrierLength).DataType(GridColumnDataType.Number).Caption("Uzunluq (km)");
+        cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj10ProtectionBarrier>
+        ("ProtectionBarrier", editMode: GridEditMode.Popup, keyField: "IdProtectionBarriers")
+        .OnEditingStart("EditingStarted").OnInitNewRow("NewRowAdding").OnRowDblClick("EditingStarted")
+
+        )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

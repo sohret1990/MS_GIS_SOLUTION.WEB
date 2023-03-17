@@ -1,0 +1,317 @@
+﻿@{
+    ViewData["Title"] = "Menyular";
+}
+
+
+<style type="text/css">
+    .dx-sortable-dragging {
+        opacity: 0.9
+    }
+
+    .options {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: rgba(191, 191, 191, 0.15);
+        position: relative;
+    }
+
+    .caption {
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+    .option {
+        margin-top: 10px;
+        margin-right: 40px;
+        display: inline-block;
+    }
+
+        .option:last-child {
+            margin-right: 0;
+        }
+</style>
+
+
+<script type="text/javascript">
+    var selectedRowId = 1;
+</script>
+
+<div class="row">
+
+    <div class="col-md-6 col-lg-5 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">Menyular</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<ErpMenu>().ID("gridMenu")
+    .OnRowClick("loadActiveMenuItems")
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.CssClass).DataType(GridColumnDataType.String).Caption("Css class").Visible(false);
+        cols.AddFor(m => m.Status).DataType(GridColumnDataType.Number).Caption("Status").Visible(false)
+                        .CellTemplate(@<text>@(Html.DevExtreme().CheckBox().ReadOnly(true).Value(new JS("data.Status || 0")))</text>)
+                        .EditCellTemplate(@<text>@Html.DevExtreme().CheckBox().ID("Status").Value(new JS("data.Status || 0")).OnValueChanged("function(e) { setValue(e.value===true?1:0); }")</text>);
+
+    })
+.RowDragging(drag =>
+{
+    drag.Group("tasksGroup");
+    drag.OnAdd("removeRowFromActive");
+})
+    .Configure<ErpMenu>("Menu", height: 200)
+    .GroupPanel(group=>group.Visible(false))
+
+    )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+
+
+    <div class="col-sm-12 col-md-6 col-lg-7">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">Əməliyyatlar</h5>
+            <div class="card-body">
+
+                @(
+
+Html.DevExtreme().DataGrid<ErpOperation>().ID("gridOperation")
+.Columns(cols =>
+{
+cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+cols.AddFor(m => m.CssClass).DataType(GridColumnDataType.String).Caption("Css class").Visible(false);
+cols.AddFor(m => m.Icon).DataType(GridColumnDataType.String).Caption("Icon").Visible(false);
+cols.AddFor(m => m.Url).DataType(GridColumnDataType.String).Caption("Link");
+cols.AddFor(m => m.Target).DataType(GridColumnDataType.String).Caption("Hədəf").Visible(false);
+cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Qeyd").Visible(false);
+cols.AddFor(m => m.Status).DataType(GridColumnDataType.Number).Caption("Status").Visible(false)
+        .CellTemplate(@<text>@(Html.DevExtreme().CheckBox().ReadOnly(true).Value(new JS("data.Status || 0")))</text>)
+                        .EditCellTemplate(@<text>@Html.DevExtreme().CheckBox().ID("opStatus").Value(new JS("data.Status || 0")).OnValueChanged("function(e) { setValue(e.value===true?1:0); }")</text>);
+
+})
+    .Configure<ErpOperation>("Operations", height: 380)
+    .Paging(pager =>
+    {
+        pager.Enabled(true);
+        pager.PageSize(10);
+    }).GroupPanel(group => group.Visible(false))
+
+    )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+
+
+</div>
+
+
+
+
+<div class="row">
+
+    <div class="col-6">
+        <div class="card">
+            <h5 class="card-header bg-warning text-white mt-0">
+                Passiv əməliyyatlar
+            </h5>
+            <div class="card-body">
+
+                @(
+
+Html.DevExtreme().DataGrid()
+.DataSource(ds => ds.Mvc().Controller("Menu").LoadAction("LoadPassivOperation").Key("Id").LoadParams(new { id = new JS("function(e){ return selectedRowId; }") }))
+.ID("treePassivOperation")
+.RemoteOperations(cnf=>
+{
+    cnf.Filtering(true);
+})
+.KeyExpr("Id")
+.ShowRowLines(true)
+.ShowColumnLines(true)
+.ShowBorders(true)
+.Columns(cols =>
+{
+    cols.Add().DataField("Name").Caption("Ad");
+
+})
+.FilterRow(f => f.Visible(true))
+.HeaderFilter(hf=>hf.Visible(true))
+.RowDragging(drag =>
+{
+    drag.Group("tasksGroup");
+    drag.OnAdd("removeRowFromActive");
+    drag.DragDirection(DragDirection.Both);
+})
+
+
+    )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+
+
+    <div class="col-6">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">Aktiv əməliyyatlar</h5>
+            <div class="card-body">
+
+                @(
+Html.DevExtreme().TreeList()
+.DataSource(ds => ds.Mvc().Controller("Menu").InsertAction("AddOperationToMenu").DeleteAction("DeleteMenuOperation").DeleteMethod("PUT")
+.LoadAction("LoadActiveOperation")
+.LoadParams(new { id = new JS("function(e){ return selectedRowId; }") })
+.Key("Id"))
+.ParentIdExpr("ParentId")
+.ID("treeActiveOperation")
+.RootValue("")
+.ShowRowLines(true)
+.ShowColumnLines(true)
+.ShowBorders(true)
+.Columns(cols =>
+{
+    cols.Add().DataField("Name").Caption("Ad");
+    cols.Add().DataField("OrderNo").DataType(GridColumnDataType.Number).SortOrder(SortOrder.Asc).SortIndex(0);
+    cols.Add().DataField("ParentId").LoadTreeListLookupSource("", "Operations", "Load").Caption("Üst menyu");
+})
+.RemoteOperations(ro=>ro.Grouping(true).Sorting(true))
+.RowDragging(drag =>
+{
+    drag.Group("tasksGroup");
+    drag.OnAdd("onAdd");
+    drag.DragDirection(DragDirection.Both);
+    drag.AllowDropInsideItem(true);
+    drag.AllowReordering(true);
+    drag.OnReorder("onActiveItemReorder");
+    drag.ShowDragIcons(true);
+})
+.Paging(pager =>
+{
+    pager.Enabled(true);
+    pager.PageSize(10);
+})
+.FocusedRowEnabled(true)
+    )
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>
+
+
+
+
+<script type="text/javascript">
+    let targetNode;
+
+    function onActiveItemReorder(e) {
+        let direction = (e.toIndex < e.fromIndex) ? "up" : "down";
+
+        var treeList = e.component,
+            visibleRows = treeList.getVisibleRows(),
+            sourceData = e.itemData,
+            targetData = visibleRows[e.toIndex].data,
+            sourceIndex = visibleRows.indexOf(sourceData),
+            targetIndex = visibleRows.indexOf(targetData);
+
+        let activeItem = e.itemData;        
+        visibleRows.splice(e.fromIndex, 1);
+
+        let orders = [];
+        let orderNumber = 0;
+
+        for (var i = 0; i < visibleRows.length; i++) {
+            let row = visibleRows[i];
+
+            let order = { Id: row.data.Id, OrderNo: orderNumber, ParentId: row.data.ParentId };
+
+            if (activeItem.Id === sourceData.Id) {
+
+                if (e.dropInsideItem) {
+                    activeItem.ParentId  = targetData.Id;
+                } else {
+                    if (e.toIndex == 0) {
+                        activeItem.ParentId = null;
+                    }                    
+                }
+            } else {
+
+            }
+
+            orders.push(order);
+        }
+
+        orders.splice(e.toIndex, 0, { Id: activeItem.Id, OrderNo: e.toIndex + 10, ParentId: activeItem.ParentId  });
+
+        for (var i = 0; i < orders.length; i++) {
+            orders[i].OrderNo = i;
+        }
+
+        let d = JSON.stringify(orders);
+
+        changeOrder(d).then((data) => {
+            refreshMenuItemGrids(e);
+        }).catch((err) => {});
+
+    }
+
+    function changeOrder(orders) {
+        return new Promise((resolve, reject) => {
+            $.post('@Url.Action("ChangeOrder", "Menu")', { data: orders }).done((response) => {
+                resolve(response);
+            }).fail((err) => {
+                reject(err);
+            });
+        });
+    }
+
+
+    function removeRowFromActive(e) {
+        let treeActive = $("#treeActiveOperation").dxTreeList('instance');
+        treeActive.getDataSource().store().remove(e.itemData.Id);
+        refreshMenuItemGrids(e);
+    }
+
+    function refreshMenuItemGrids(e) {
+
+        let treePassiv = $("#treePassivOperation").dxDataGrid('instance');
+        treePassiv.getDataSource().reload();
+        treePassiv.refresh(true);
+
+        let treeActive = $("#treeActiveOperation").dxTreeList('instance');
+        treeActive.getDataSource().reload();
+        treeActive.refresh();
+    }
+
+    function onAdd(e) {
+
+        if (selectedRowId === 0) {
+            notify('warning', 'Zəhmət olmasa menyu seçin');
+        }
+
+        let item = {};
+
+        let parentId = e.component.getKeyByRowIndex(e.toIndex);
+        item.MenuId = selectedRowId;
+        if (e.dropInsideItem) {
+            item.ParentId = parentId;
+        }
+
+        item.OperationId = e.itemData.Id;
+        item.OrderNumber = e.toIndex;
+        e.component.getDataSource().store().insert(item).then((data) => { refreshMenuItemGrids(e); });
+    }
+
+    function loadActiveMenuItems(e) {
+        selectedRowId = e.key;
+        refreshMenuItemGrids(e);
+    }
+
+</script>
+
+
+

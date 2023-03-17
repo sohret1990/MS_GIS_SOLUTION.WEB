@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "GetReport";
+}
+
+<script>
+    function getSourceType() {
+        return $('#sourceType').dxTagBox('instance').option('value');
+    }
+</script>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">Nasos stansiyaları</h5>
+            <div class="card-body">
+
+                <div class="row">
+                    <div class="col-12">
+                        @(
+    Html.DevExtreme().Form<PumpStationFilterModel>().ColCount(4).Items(items =>
+    {
+        items.AddSimpleFor(m => m.fk_id_admin_unit).Editor(e=>e.TagBox().FillWithAdminUnit()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Yerləşdiyi ərazi"));
+
+        items.AddSimpleFor(m => m.fk_id_appointment).Editor(e => e.TagBox().FillWithAppointment()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Məqsədi"));
+
+        items.AddSimpleFor(m => m.fk_id_activity_status).Editor(e => e.TagBox().FillWithActivityStatus()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("İstifadədə olub/olmaması"));
+
+        items.AddSimpleFor(m => m.fk_id_owner).Editor(e => e.TagBox().FillWithOwner()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Mülkiyyətçi"));
+
+        items.AddSimpleFor(m => m.fk_id_pump_station_engine_type).Editor(e => e.TagBox().FillWithPumpstationEngineType()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Mühərrikin tipi"));
+
+        items.AddSimpleFor(m => m.fk_id_pump_station_type).Editor(e => e.TagBox().FillWithPumpstationType()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Nasos stansiyasının tipi"));
+
+        items.AddSimpleFor(m => m.fk_id_source_type).Editor(e => e.TagBox().ID("sourceType").FillWithSourceType()).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Mənbə tipi"));
+
+        items.AddSimpleFor(m => m.fk_id_source).Editor(e => e.TagBox().FillWithSource(new { typeId = new JS("getSourceType")} )).Label(lbl => lbl.Alignment(HorizontalAlignment.Left).Location(FormLabelLocation.Top).Text("Mənbə"));
+    })
+    )
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <iframe frameborder="0" width="100%" class="vh-100 min-vh-100" src="/Report/ReportView?id=2&layout=null"></iframe>
+                    </div>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+</div>

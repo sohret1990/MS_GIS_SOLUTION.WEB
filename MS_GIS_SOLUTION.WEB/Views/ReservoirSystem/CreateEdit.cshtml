@@ -1,0 +1,95 @@
+﻿@model Obj04ReservoirSystemViewModel
+@{
+    ViewData["Title"] = (Model.IdReservoirSystem <= 0 || Model.IdReservoirSystem == null)? "Yeni su anbarı / su tutarı" : "Su anbarı / Su tutarı məlumatları üzərində düzəliş";
+    if (Model.Mode == true)
+    {
+        ViewData["Title"] = "Ətraflı məlumat";
+    }
+}
+@section Scripts
+    {
+    <script type="text/javascript">
+
+        function onContentReady(e) {
+
+        }
+
+        function getSourceType() {
+            return $('#SourceType').dxSelectBox('instance').option('value');
+        }
+
+        function onSourceTypeValueChange(e) {
+            $('#Source').dxSelectBox('instance').option('value', null);
+            $('#Source').dxSelectBox('instance').getDataSource().reload();
+        }
+
+    </script>
+
+}
+
+<partial name="_ArcgisCreateEdit" view-data='@new ViewDataDictionary(ViewData) { { "service-id", 11 }, { "geometry-type", "polygon" }, {"object-id", Model.Objectid ?? 0 } }' />
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-outlined style-primary">
+            <!--end .card-head -->
+            <div class="card-body">
+                <Form asp-action="Save" method="post" onsubmit="return checkBeforeSubmit()" class="tx-form" enctype="multipart/form-data">
+                    <input asp-for="IdReservoirSystem" type="hidden" />
+                    @using (Html.DevExtreme().ValidationGroup())
+                    {
+                        @(Html.DevExtreme().Form<Obj04ReservoirSystemViewModel>().ID("form").ReadOnly(Model.Mode).ShowValidationSummary(false).Items(items =>
+                                    {
+                                        items.AddGroup().CssClass("first-group").Caption((Model.Mode == true) ? "Ətraflı məlumat" : (Model.IdReservoirSystem <= 0 || Model.IdReservoirSystem == null) ? "Yeni su tutar" : "Su tutar məlumatları üzərində düzəliş").ColCount(3).Items
+                                (x =>
+                                {
+                                x.AddSimpleFor(m => m.Name).Editor(e => e.TextBox()).Label(e => e.Text("Ad")).IsRequired(true);
+                                x.AddSimpleFor(m => m.FkIdAdminUnit).Editor(e => e.SelectBox().FillWithAdminUnit()).Label(e => e.Text("Yerləşdiyi ərazi"));
+                                x.AddSimpleFor(m => m.FkIdWrLocationType).Editor(e => e.SelectBox().FillWithWRLocationType()).Label(e => e.Text("Yerləşməsinə görə tipi"));
+                                x.AddSimpleFor(m => m.FkIdWrRegulationType).Editor(e => e.SelectBox().FillWithWRRegulationType()).Label(e => e.Text("Nizamlanma növü"));
+                                x.AddSimpleFor(m => m.FkIdAppointment).Editor(e => e.SelectBox().FillWithAppointment(new { groupId = 4 })).Label(e => e.Text("Əsas təyinatı"));
+                                x.AddSimpleFor(m => m.FkIdAppointmentAddition).Editor(e => e.SelectBox().FillWithAppointment(new { groupId = 4 })).Label(e => e.Text("Digər təyinatı"));
+                                x.AddSimpleFor(m => m.FkIdSourceType).Editor(e => e.SelectBox().ID("SourceType").OnValueChanged("onSourceTypeValueChange").FillWithSourceType()).Label(e => e.Text("Su mənbəyi növü"));
+                                x.AddSimpleFor(m => m.FkIdSource).Editor(e => e.SelectBox().ID("Source").FillWithSource(new { sourceType = new JS("getSourceType") })).Label(e => e.Text("Su mənbəyi"));
+                                x.AddSimpleFor(m => m.FkIdTechnicalStatus).Editor(e => e.SelectBox().FillWithTechnicalStatus()).Label(e => e.Text("Texniki vəziyyəti"));
+                                x.AddSimpleFor(m => m.FkIdActivityStatus).Editor(e => e.SelectBox().FillWithActivityStatus()).Label(e => e.Text("İstifadədə olub-olmaması"));
+                                x.AddSimpleFor(m => m.FkIdOwnershipType).Editor(e => e.SelectBox().FillWithOwnershipType()).Label(e => e.Text("Mülkiyyət növü"));
+                                x.AddSimpleFor(m => m.FkIdOwner).Editor(e => e.SelectBox().FillWithOwner()).Label(e => e.Text("Mülkiyyətçisi"));
+                                x.AddSimpleFor(m => m.FkIdProtectionType).Editor(e => e.SelectBox().FillWithProtectionType()).Label(e => e.Text("Mühafizə növü"));
+                                x.AddSimpleFor(m => m.ProtectionZoneArea).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                                .ShowClearButton(true).Min(0)).Label(e => e.Text("Su mühafizə zonasının eni(m)"));
+                                x.AddSimpleFor(m => m.NormalPressure).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                                .ShowClearButton(true).Min(0)).Label(e => e.Text("Normal basqı səviyyəsi(m)"));
+                                x.AddSimpleFor(m => m.ExploitationDate).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                        .ShowClearButton(true).Min(0)).Label(e => e.Text("İstismara verildiyi tarix(il)"));
+                                x.AddSimpleFor(m => m.ServiceArea).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Suvarma sahələri(ha)"));
+                                x.AddSimpleFor(m => m.DeadVolume).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Ölü həcm səviyyəsi ÖHS(mln.m³)"));
+                                x.AddSimpleFor(m => m.MinorAreaA).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Güzgü sahəsi NBS (km²)"));
+                                x.AddSimpleFor(m => m.MinorAreaB).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Güzgü sahəsi ÖHS (km²)"));
+                                x.AddSimpleFor(m => m.VolumeA).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Həcmi NBS-də (mln.m³)"));
+                                x.AddSimpleFor(m => m.VolumeB).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Həcmi ÖHS-də (mln.m³)"));
+                                x.AddSimpleFor(m => m.Description).Editor(editor => editor.TextArea()).Label(e => e.Text("Qeyd")).ColSpan(3);
+                                x.AddSimpleFor(m => m.Objectid).Editor(e => e.NumberBox().Visible(false)).Label(x => x.Visible(false)).ColSpan(3);
+                                x.AddGroup().Template(@<text>@Html.AddButtonPanel(Model.ButtonPanel)</text>).ColSpan(3);
+                            });
+                            }).FormData(Model).ShowValidationSummary(true).ShowColonAfterLabel(true).ShowOptionalMark(true).ShowRequiredMark(true).OnContentReady("onContentReady"))
+
+                    }
+
+                </Form>
+            </div><!--end .card-body -->
+        </div><!--end .card -->
+        @*<em class="text-caption">Outlined Card with icon</em>*@
+    </div><!--end .col -->
+</div>
+
+
+
+
+

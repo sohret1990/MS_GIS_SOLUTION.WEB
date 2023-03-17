@@ -1,0 +1,83 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+
+<script type="text/javascript">
+   var root = '@Url.Action("CreateEdit", "Collector")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj03CollectorView>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageCollector"))
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Objectid).Visible(false).SortOrder(SortOrder.Desc);
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.FkIdObjectType).LoadWithObjectType().Caption("Obyekt tipi");
+        cols.AddFor(m => m.FkIdAppointment).LoadWithAppoitment().Caption("Təyinatı");
+        cols.AddFor(m => m.FkReceivingSourceType).LoadWithSourceType().Caption("Drenaj sularının qəbuledicisi növləri");
+        cols.AddFor(m => m.FkIdReceivingSource).LoadWithSource().Caption("Drenaj sularının qəbuledicisi");
+        //cols.AddFor(m => m.SumOfCapacity).Visible(false).DataType(GridColumnDataType.String).Caption("Cəmi su sərfi(m³/ s)");        
+        cols.AddFor(m => m.MinCapacity).DataType(GridColumnDataType.String).Caption("Minimal su tutumu (m3/san)");
+        cols.AddFor(m => m.MaxCapacity).DataType(GridColumnDataType.String).Caption("Maksimal su tutumu (m3/san)");
+        cols.AddFor(m => m.ExploitationDate).Caption("İstismara verildiyi tarix(il)");
+        cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj03CollectorView>
+        ("Collector", editMode: GridEditMode.Popup, keyField: "IdCollector")
+        .OnEditingStart("EditingStarted").OnInitNewRow("NewRowAdding").OnRowDblClick("EditingStarted").MasterDetail(detail => detail.Enabled(true).Template(new TemplateName("adminunit-grid")))
+
+        )
+                @using (Html.DevExtreme().NamedTemplate("adminunit-grid"))
+                {
+                    @(Html.DevExtreme().DataGrid<Obj03CollectorAdminUnit>()
+            .LoadPanel(e => e.Enabled(true))
+            .Columns(columns =>
+            {
+                columns.AddFor(m => m.OrderNo).Caption("Sıra nömrəsi");
+                columns.AddFor(m => m.FkIdAdminUnit).Caption("Rayon").LoadWithAdminUnit();
+                columns.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                columns.AddFor(m => m.DeviceCount).Caption("Üzərindəki qurğuların sayı");
+                columns.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                columns.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+                columns.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                columns.AddFor(m => m.ProtectionZoneArea).DataType(GridColumnDataType.Number).Caption("Mühafizə sahəsi(ha)");
+                columns.AddFor(m => m.DrainedArea).DataType(GridColumnDataType.Number).Caption("Drenləşmiş sahə(ha)");
+                columns.AddFor(m => m.Capacity).DataType(GridColumnDataType.Number).Caption("Su sərfi (m³/s)");
+                columns.AddFor(m => m.DeviceCount).DataType(GridColumnDataType.Number).Caption("Üzərindəki qurğuların sayı");
+                columns.AddFor(m => m.ActualLength).DataType(GridColumnDataType.Number).Caption("Layihə üzrə uzunluq(km)");
+                columns.AddFor(m => m.Length).DataType(GridColumnDataType.Number).Caption("Coğrafi uzunluq(km)");
+                columns.Add().DataField("ServiceSib").Caption("Xidmət etdiyi SİB-lər");
+            }).Configure("Collector",loadAction: "LoadCollectorAdminUnit",keyField: "Objectid",allowAdd:false, allowDelete:false,allowUpdate:false, canExport: false, loadParams: new { collectorId = new JS("data.IdCollector") })
+                    )
+                }
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

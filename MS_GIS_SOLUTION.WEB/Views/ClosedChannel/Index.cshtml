@@ -1,0 +1,93 @@
+﻿
+@{
+    ViewData["Title"] = ViewData["PageTitle"];
+}
+
+
+<script type="text/javascript">
+   var root = '@Url.Action("CreateEdit", "ClosedChannel")';
+
+    function EditingStarted(e) {
+        e.cancel = true;
+        window.location.href = root + "/" + e.key;
+    }
+
+    function NewRowAdding(e) {
+        window.location.href = root;
+        e.component.cancelAll();
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">@ViewData["PageTitle"]</h5>
+            <div class="card-body">
+
+                @(
+
+    Html.DevExtreme().DataGrid<Obj02ClosedChannel>
+    ().StateStoring(s => s
+                .Enabled(true)
+                .Type(StateStoringType.LocalStorage)
+                .StorageKey("storageClosedChannel"))
+    .Columns(cols =>
+    {
+        cols.AddFor(m => m.Objectid).Visible(false).SortOrder(SortOrder.Desc);
+        cols.AddFor(m => m.Name).DataType(GridColumnDataType.String).Caption("Ad");
+        cols.AddFor(m => m.FkIdObjectType).LoadWithObjectType().Caption("Obyekt tipi");
+        cols.AddFor(m => m.FkIdAppointment).LoadWithAppoitment().Caption("Təyinatı");
+        cols.AddFor(m => m.FkIdSourceType).LoadWithSourceType().Caption("Su mənbəyi növü");
+        cols.AddFor(m => m.FkIdSource).LoadWithSource().Caption("Su mənbəyi");
+        cols.AddFor(m => m.ExploitationDate).Caption("İstismara verildiyi tarix(il)");
+        cols.AddFor(m => m.Description).DataType(GridColumnDataType.String).Caption("Təsviri");
+    })
+    .Configure<Obj02ClosedChannel>
+        ("ClosedChannel", editMode: GridEditMode.Popup, keyField: "IdClosedChannel")
+        .OnEditingStart("EditingStarted").OnInitNewRow("NewRowAdding").OnRowDblClick("EditingStarted").MasterDetail(detail => detail.Enabled(true).Template(new TemplateName("adminunit-grid")))
+
+        )
+                @using (Html.DevExtreme().NamedTemplate("adminunit-grid"))
+                {
+                    @(Html.DevExtreme().DataGrid<Obj02ClosedChannelAdminUnit>()
+            .LoadPanel(e => e.Enabled(true))
+            .Columns(columns =>
+            {
+                columns.AddFor(m => m.OrderNo).Caption("Sıra nömrəsi");
+                columns.AddFor(m => m.FkIdAdminUnit).Caption("Rayon").LoadWithAdminUnit();
+                columns.AddFor(m => m.FkIdOwnershipType).LoadWithOwnershipType().Caption("Mülkiyyət növü");
+                columns.AddFor(m => m.FkIdOwner).LoadWithOwner().Caption("Mülkiyyətçisi");
+                columns.AddFor(m => m.FkIdActivityStatus).LoadWithActivityStatus().Caption("Fəaliyyətdə olub-olmaması");
+                columns.AddFor(m => m.FkIdTechnicalStatus).LoadWithTechnicalStatus().Caption("Texniki vəziyyəti");
+                columns.AddFor(m => m.ProtectionZoneArea).Caption("Mühafizə sahəsi(ha)");
+                columns.AddFor(m => m.Length).Caption("Coğrafi uzunluq(km)");
+                columns.AddFor(m => m.ServiceArea).Caption("Xidmət etdiyi sahə(ha)");
+                columns.AddFor(m => m.DeviceCount).Caption("Üzərindəki qurğuların sayı");
+                columns.AddFor(m => m.AdditionalAdminUnit).Caption("Kənd-Qəsəbə");
+                columns.Add().DataField("ServiceSib").Caption("Xidmət etdiyi SİB-lər");
+            })
+.Configure("ClosedChannel",loadAction: "LoadClosedChannelAdminUnit",keyField: "Objectid",allowAdd:false, allowDelete:false,allowUpdate:false, canExport: false, loadParams: new { channelId = new JS("data.IdClosedChannel") }).MasterDetail(detail => detail.Enabled(true).Template(new TemplateName("pipetypes-grid")))
+                    )
+                }
+
+                @using (Html.DevExtreme().NamedTemplate("pipetypes-grid"))
+                {
+                    <div class="row">
+                        <div class="col-12 p-3">
+                            @(Html.DevExtreme().DataGrid<Obj02ClosedChannelAdminUnitPipeInfo>()
+                            .Columns(columns =>
+                            {
+                                columns.AddFor(x => x.FkIdPipeType).LoadWithPipeType().Caption("Boru tipi");
+                                columns.AddFor(x => x.Lenght).DataType(GridColumnDataType.Number).Caption("Uzunluq(km)");
+                            })
+ .Configure("ClosedChannelAdminUnitPipeInfo", loadAction: "LoadPipeTypesByAdminUnit", keyField: "Objectid", allowAdd: false, allowDelete: false, allowUpdate: false, canExport: false, loadParams: new { AdminUnitId = new JS("data.IdClosedChannelAdminUnit") }))
+                        </div>
+                    </div>
+                }
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>

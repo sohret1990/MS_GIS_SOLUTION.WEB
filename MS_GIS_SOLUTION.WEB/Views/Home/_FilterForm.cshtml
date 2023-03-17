@@ -1,0 +1,862 @@
+﻿@{
+    Layout = null;
+}
+
+
+<style type="text/css">
+
+    .dx-form-group-caption {
+        font-weight: normal;
+    }
+
+    .dx-form-group-caption {
+        font-size: 12px;
+    }
+
+    .detail-form {
+        background: antiquewhite;
+    }
+
+</style>
+
+<script>
+    function getSourceType() {
+        return $('#pumpstationSourceType').dxTagBox('instance').option('value').join(',');
+    }
+
+    function onPumpstationSourceTypeValueChange(e) {
+        $('#pumpstationSource').dxTagBox('instance').option('value', []);
+        $('#pumpstationSource').dxTagBox('instance').getDataSource().reload();
+        $('#pumpstationSource').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+    function onChannelSourceTypeValueChange(e) {
+        $('#channelSource').dxTagBox('instance').option('value', []);
+        $('#channelSource').dxTagBox('instance').getDataSource().reload();
+        $('#channelSource').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+    function getChannelSource() {
+        return $('#channelSourceType').dxTagBox('instance').option('value').join(',');
+    }
+
+
+    function onClosedChannelSourceTypeValueChange(e) {
+        $('#closedChannelSource').dxTagBox('instance').option('value', []);
+        $('#closedChannelSource').dxTagBox('instance').getDataSource().reload();
+        $('#closedChannelSource').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+    function getClosedChannelSource() {
+        return $('#closedChannelSourceType').dxTagBox('instance').option('value').join(',');
+    }
+
+    function onCollectorSourceTypeValueChange(e) {
+        $('#collectorSource').dxTagBox('instance').option('value', []);
+        $('#collectorSource').dxTagBox('instance').getDataSource().reload();
+        $('#collectorSource').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+    function getCollectorSource() {
+        return $('#collectorSourceType').dxTagBox('instance').option('value').join(',');
+    }
+
+    function getCollectorReceivingSource() {
+        return $('#collectorReceivingSourceType').dxTagBox('instance').option('value').join(',');
+    }
+
+    function onCollectorReceivingSourceTypeValueChange(e) {
+        $('#collectorReceivingSource').dxTagBox('instance').option('value', []);
+        $('#collectorReceivingSource').dxTagBox('instance').getDataSource().reload();
+        $('#collectorReceivingSource').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+
+    function onHtiSourceTypeValueChange(e) {
+        $('#htiSource').dxTagBox('instance').option('value', []);
+        $('#htiSource').dxTagBox('instance').getDataSource().reload();
+        $('#htiSource').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+    function getHtiSource() {
+        return $('#htiSourceType').dxTagBox('instance').option('value').join(',');
+    }
+
+
+</script>
+
+
+@foreach (var layer in ArcGisServiceList.Layers.OrderBy(x=>x.OrderNumber))
+{
+    using (Html.DevExtreme().NamedTemplate($"filterFormTemplate-{layer.Id}"))
+    {
+        var form = Html.DevExtreme().Form().ColCount(2).ID($"filterForm-{layer.Id}");
+
+        form.Items(items =>
+        {
+            var type = (ArcgisSerivces)layer.Id;
+            switch (type)
+            {
+                case ArcgisSerivces.NASOS_STANSIYALARI:
+
+                    items.AddSimple().DataField("name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_appointment").ColSpan(2).Editor(e => e.TagBox().FillWithAppointment(new { groupId = 9 })).Label(lbl => lbl.Text("Təyinatı").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_source_type").Editor(e => e.TagBox().OnValueChanged("onPumpstationSourceTypeValueChange").ID("pumpstationSourceType").FillWithSourceType()).Label(lbl => lbl.Text("Su mənbəyi tipi").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_source").Editor(e => e.TagBox().ID("pumpstationSource").FillWithSource(new { sourceType = new JS("getSourceType") })).Label(lbl => lbl.Text("Su mənbəyi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(lbl => lbl.Text("Fəaliyyətdə olub-olmaması").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_technical_status").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(lbl => lbl.Text("Texniki vəziyyəti").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_ownership_type").Editor(e => e.TagBox().FillWithOwnershipType()).Label(lbl => lbl.Text("Mülkiyyət növü").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_owner").Editor(e => e.TagBox().FillWithOwner()).Label(lbl => lbl.Text("Mülkiyyətçi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_pump_station_type").Editor(e => e.TagBox().FillWithPumpstationType()).Label(lbl => lbl.Text("Nasos stansiyasının növü").Location(FormLabelLocation.Top));
+                    items.AddSimple().ColSpan(2).DataField("fk_id_pump_station_engine_type").Editor(e => e.TagBox().FillWithPumpstationEngineType()).Label(lbl => lbl.Text("Nasos stansiyasının tipi").Location(FormLabelLocation.Top));
+
+                    items.AddGroup().ColCount(2).Caption("İstismara verildiyi tarix(il)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("EXPLOITATION_DATE_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("EXPLOITATION_DATE_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+                    items.AddGroup().ColCount(2).Caption("Xidmət etdiyi sahə (ha)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("service_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("service_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+                    items.AddGroup().ColCount(2).Caption("Aqreqatların sayı (ədəd)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("aggregates_count_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("aggregates_count_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+
+                    items.AddGroup().ColCount(2).Caption("Ümumi gücü (kvt)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("total_capacity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("total_capacity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Məhsuldarlığı (m³/san)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("productivity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("productivity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+                    items.AddGroup().CssClass("detail-form").ColSpan(2).ColCount(2).Caption("Nasoslar və mühərriklər").Items(groupItems =>
+                    {
+                        groupItems.AddGroup().ColSpan(2).Caption("Nasos").Items(gr =>
+                        {
+                            gr.AddSimple().DataField("pump_model").Label(lbl => lbl.Text("Markası").Location(FormLabelLocation.Top));
+                        });
+
+                        groupItems.AddGroup().ColCount(2).Caption("Məhsuldarlığı (m³/san)").Items(gr =>
+                        {
+                            gr.AddSimple().DataField("pump_productivity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            gr.AddSimple().DataField("pump_productivity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        groupItems.AddGroup().ColCount(2).Caption("Nasosun basqısı (m)").Items(gr =>
+                        {
+                            gr.AddSimple().DataField("pump_pressure_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            gr.AddSimple().DataField("pump_pressure_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        groupItems.AddGroup().ColSpan(2).ColCount(2).Caption("Mühərrik").Items(gr =>
+                        {
+                            gr.AddSimple().DataField("engine_model").Label(lbl => lbl.Text("Mühərrikin markası").Location(FormLabelLocation.Top));
+                            gr.AddSimple().DataField("fk_id_pse_synchronize_type").Editor(e => e.TagBox().FillWithPumpstationEngineSynchronisationType()).Label(lbl => lbl.Text("Mühərrikin növü").Location(FormLabelLocation.Top));
+                        });
+
+                        groupItems.AddGroup().ColCount(2).Caption("Mühərrikin son təmir ili").Items(gr =>
+                        {
+                            gr.AddSimple().DataField("engine_last_repair_date_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            gr.AddSimple().DataField("engine_last_repair_date_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        groupItems.AddGroup().ColCount(2).Caption("Mühərrikin gücü (kvt)").Items(gr =>
+                        {
+                            gr.AddSimple().DataField("engine_power_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            gr.AddSimple().DataField("engine_power_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        groupItems.AddGroup().ColSpan(2).Caption("Basqılı boru xətti").Items(grp =>
+                        {
+                            grp.AddGroup().ColCount(2).Caption("Diametri(mm)").Items(gr =>
+                            {
+                                gr.AddSimple().DataField("engine_pipeline_diameter_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                                gr.AddSimple().DataField("engine_pipeline_diameter_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                            });
+
+                            grp.AddGroup().ColSpan(2).Caption("Materialı").Items(gr =>
+                            {
+                                gr.AddSimple().DataField("engine_pipeline_material").Label(lbl => lbl.Visible(false));
+                            });
+
+                            grp.AddGroup().ColCount(2).Caption("Uzunluğu(pm)").Items(gr =>
+                            {
+                                gr.AddSimple().DataField("engine_pipeline_length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                                gr.AddSimple().DataField("engine_pipeline_length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                            });
+                        });
+
+                    });
+
+                    break;
+                case ArcgisSerivces.ACHIQ_SUVARMA_SHEBEKELERI:
+
+                    items.AddSimple().ColSpan(2).DataField("name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_appointment").Editor(e => e.TagBox().FillWithAppointment(new { groupId = 1 })).Label(lbl => lbl.Text("Təyinatı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_object_type").Editor(e => e.TagBox().FillWithObjectTypeByGroup(new { groupId = 1 })).Label(lbl => lbl.Text("Obyekt tipi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_source_type").Editor(e => e.TagBox().OnValueChanged("onChannelSourceTypeValueChange").ID("channelSourceType").FillWithSourceType()).Label(lbl => lbl.Text("Su mənbəyi tipi").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_source").Editor(e => e.TagBox().ID("channelSource").FillWithSource(new { sourceType = new JS("getChannelSource") })).Label(lbl => lbl.Text("Su mənbəyi").Location(FormLabelLocation.Top));
+
+
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("İstismara verildiyi tarix(il)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("exploitation_date_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("exploitation_date_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+
+                    items.AddGroup().CssClass("detail-form").ColSpan(2).ColCount(2).Caption("").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(lbl => lbl.Text("Fəaliyyətdə olub-olmaması").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_technical_status").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(lbl => lbl.Text("Texniki vəziyyəti").Location(FormLabelLocation.Top));
+
+                        gr.AddSimple().DataField("fk_id_ownership_type").Editor(e => e.TagBox().FillWithOwnershipType()).Label(lbl => lbl.Text("Mülkiyyət növü").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_owner").Editor(e => e.TagBox().FillWithOwner()).Label(lbl => lbl.Text("Mülkiyyətçi").Location(FormLabelLocation.Top));
+
+                        gr.AddGroup().ColSpan(2).ColCount(2).Caption("Xidmət etdiyi sahə (ha)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("service_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("service_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Suburaxma qabiliyyəti (m³/san)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("capacity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("capacity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Coğrafi uzunluq (km)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Mühafizə zonasının eni (m)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("protection_zone_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("protection_zone_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Üzərində olan qurğuların sayı (ədəd)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("device_count_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("device_count_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColSpan(2).ColCount(2).Caption("Su ölçən cihazların sayı (ədəd)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("water_meters_count_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("water_meters_count_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddSimple().ColSpan(2).DataField("additional_admin_unit").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Qəsəbə, kənd").Location(FormLabelLocation.Top));
+
+
+                        //gr.AddSimple().DataField("fk_id_object_admin_unit").Editor(e => e.TagBox().LoadWithWaterUseAssociation()).Label(lbl => lbl.Text("Xidmət etdiyi siblər").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_water_use_association").Editor(e => e.TagBox().LoadWithWaterUseAssociation(new { adminUnitIds = new JS("getSelectedAdminUnits") } )).Label(lbl => lbl.Text("Xidmət etdiyi siblər").Location(FormLabelLocation.Top));
+
+
+                        gr.AddSimple().DataField("fk_cover_id_barrier_type").Editor(e => e.TagBox().FillWithBarrierType()).Label(lbl => lbl.Text("Örtük növü").Location(FormLabelLocation.Top));
+
+                        gr.AddGroup().ColCount(2).Caption("Layihe üzrə uzunluq (km)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("cover_length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("cover_length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                    });
+
+                    break;
+                case ArcgisSerivces.QAPALI_SUVARMA_SHEBEKELERI:
+
+                    items.AddSimple().ColSpan(2).DataField("name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_appointment").Editor(e => e.TagBox().FillWithAppointment(new { groupId = 6 })).Label(lbl => lbl.Text("Təyinatı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_object_type").Editor(e => e.TagBox().FillWithObjectTypeByGroup(new { groupId = 2 })).Label(lbl => lbl.Text("Obyekt tipi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_source_type").Editor(e => e.TagBox().OnValueChanged("onClosedChannelSourceTypeValueChange").ID("closedChannelSourceType").FillWithSourceType()).Label(lbl => lbl.Text("Su mənbəyi tipi").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_source").Editor(e => e.TagBox().ID("closedChannelSource").FillWithSource(new { sourceType = new JS("getClosedChannelSource") })).Label(lbl => lbl.Text("Su mənbəyi").Location(FormLabelLocation.Top));
+
+
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("İstismara verildiyi tarix(il)").Items(groupItems =>
+                    {
+                        groupItems.AddSimple().DataField("exploitation_date_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                        groupItems.AddSimple().DataField("exploitation_date_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                    });
+
+
+                    items.AddGroup().CssClass("detail-form").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(lbl => lbl.Text("Fəaliyyətdə olub-olmaması").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_technical_status").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(lbl => lbl.Text("Texniki vəziyyəti").Location(FormLabelLocation.Top));
+
+                        gr.AddSimple().DataField("fk_id_ownership_type").Editor(e => e.TagBox().FillWithOwnershipType()).Label(lbl => lbl.Text("Mülkiyyət növü").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_owner").Editor(e => e.TagBox().FillWithOwner()).Label(lbl => lbl.Text("Mülkiyyətçi").Location(FormLabelLocation.Top));
+                        //gr.AddSimple().DataField("fk_cover_id_barrier_type").Editor(e => e.TagBox().FillWithBarrierType()).Label(lbl => lbl.Text("Örtük növü").Location(FormLabelLocation.Top));
+
+                        gr.AddGroup().ColCount(2).Caption("Xidmət etdiyi sahə (ha)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("service_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("service_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Suburaxma qabiliyyəti (m³/san)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("capacity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("capacity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Coğrafi Uzunluq (km)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Mühafizə zonasının eni (m)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("protection_zone_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("protection_zone_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Üzərindəki hidrotexniki qurğuların sayı (ədəd)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("device_count_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("device_count_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Su ölçən cihazların sayı (ədəd)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("water_meters_count_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("water_meters_count_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddSimple().ColSpan(2).DataField("additional_admin_unit").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Qəsəbə, kənd").Location(FormLabelLocation.Top));
+
+
+                        gr.AddGroup().ColSpan(2).ColCount(2).Caption("İstismara verildiyi tarix (il)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("exploitation_date_pipe_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("exploitation_date_pipe_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Layihe üzrə uzunluq (km)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("pipe_length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("pipe_length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddSimple().DataField("fk_id_object_type_pipe").Editor(e => e.TagBox().FillWithObjectTypeByGroup(new { groupId = 2 })).Label(lbl => lbl.Text("Obyekt tipi").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_service_admin_unit").Editor(e => e.TagBox().FillWithAdminUnit()).Label(lbl => lbl.Text("Xidmət etdiyi (rayon)").Location(FormLabelLocation.Top));
+
+
+
+                        gr.AddSimple().DataField("fk_id_pipe_type").Editor(e => e.TagBox().FillWithPipeType()).Label(lbl => lbl.Text("Boru növü").Location(FormLabelLocation.Top));
+
+
+                        gr.AddSimple().DataField("fk_id_water_use_association").Editor(e => e.TagBox().LoadWithWaterUseAssociation(new { adminUnitIds = new JS("getSelectedAdminUnits") })).Label(lbl => lbl.Text("Xidmət etdiyi siblər").Location(FormLabelLocation.Top));
+
+                    });
+
+                    break;
+                case ArcgisSerivces.KOLLEKTOR_DRENAJ_SHEBEKESI:
+
+                    items.AddSimple().ColSpan(2).DataField("name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_appointment").Editor(e => e.TagBox().FillWithAppointment(new { groupId = 7 })).Label(lbl => lbl.Text("Təyinatı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_object_type").Editor(e => e.TagBox().FillWithObjectTypeByGroup(new { groupId = 3 })).Label(lbl => lbl.Text("Obyekt tipi").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_receiving_source_type").Editor(e => e.TagBox().OnValueChanged("onCollectorReceivingSourceTypeValueChange").ID("collectorReceivingSourceType").FillWithSourceType()).Label(lbl => lbl.Text("Drenaj sularının qəbuledicisi növləri").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_receiving_source").Editor(e => e.TagBox().ID("collectorReceivingSource").FillWithSource(new { sourceType = new JS("getCollectorReceivingSource") })).Label(lbl => lbl.Text("Drenaj sularının qəbuledicisi").Location(FormLabelLocation.Top));
+
+                    items.AddGroup().CssClass("detail-form").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(lbl => lbl.Text("Fəaliyyətdə olub-olmaması").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_technical_status").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(lbl => lbl.Text("Texniki vəziyyəti").Location(FormLabelLocation.Top));
+
+                        gr.AddSimple().DataField("fk_id_ownership_type").Editor(e => e.TagBox().FillWithOwnershipType()).Label(lbl => lbl.Text("Mülkiyyət növü").Location(FormLabelLocation.Top));
+                        gr.AddSimple().DataField("fk_id_owner").Editor(e => e.TagBox().FillWithOwner()).Label(lbl => lbl.Text("Mülkiyyətçisi").Location(FormLabelLocation.Top));
+                        //gr.AddSimple().DataField("fk_id_object_type_admin_unit").Editor(e => e.TagBox().FillWithObjectTypeByGroup(new { groupid = 1 })).Label(lbl => lbl.Text("Örtük növü").Location(FormLabelLocation.Top));
+
+                        gr.AddSimple().DataField("fk_id_water_use_association").Editor(e => e.TagBox().LoadWithWaterUseAssociation(new { adminUnitIds = new JS("getSelectedAdminUnits") })).Label(lbl => lbl.Text("Xidmət etdiyi siblər").Location(FormLabelLocation.Top));
+
+                        gr.AddGroup().ColCount(2).Caption("Minimal su tutumu(m3/san)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("min_capacity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("min_capacity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Maksimal su tutumu(m3/san)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("max_capacity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("max_capacity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Su sərfi (m3/san)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("capacity_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("capacity_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Drenləşdirilmiş sahə (ha)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("drained_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("drained_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        gr.AddGroup().ColCount(2).Caption("Coğrafi uzunluq (km)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Layihə üzrə uzunluq (km)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("actual_length_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("actual_length_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Mühafizə zonasının eni (m)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("protection_zone_area_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("protection_zone_area_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+
+                        gr.AddGroup().ColCount(2).Caption("Üzərindəki qurğuların sayı (ədəd)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("water_consumption_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("water_consumption_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                        //gr.AddSimple().ColSpan(2).DataField("additional_admin_unit").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Qəsəbə, kənd").Location(FormLabelLocation.Top));
+
+
+                        gr.AddGroup().ColSpan(2).ColCount(2).Caption("İstismara verildiyi tarix (il)").Items(groupItems =>
+                        {
+                            groupItems.AddSimple().DataField("exploitation_date_au_min").Editor(e => e.NumberBox().Placeholder("min").Value(null)).Label(lbl => lbl.Visible(false));
+                            groupItems.AddSimple().DataField("exploitation_date_au_max").Editor(e => e.NumberBox().Placeholder("max").Value(null)).Label(lbl => lbl.Visible(false));
+                        });
+
+                    });
+
+
+                    break;
+                case ArcgisSerivces.HIDROTEXNIKI_QURGULAR:
+
+                    items.AddSimple().ColSpan(2).DataField("name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("fk_id_hti_network_type").Editor(e => e.TagBox().FillWithHtiNetworkType()).Label(e => e.Location(FormLabelLocation.Top).Text("Qurğu şəbəkə növü"));
+                    items.AddSimple().DataField("fk_id_ht_installation_type").Editor(e => e.TagBox().FillWithHtiType()).Label(e => e.Location(FormLabelLocation.Top).Text("Qurğu tipləri"));
+                    items.AddSimple().DataField("fk_id_technical_status").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki vəziyyəti"));
+
+                    items.AddSimple().DataField("fk_id_source_type").Editor(e => e.TagBox().OnValueChanged("onHtiSourceTypeValueChange").ID("htiSourceType").FillWithSourceType()).Label(lbl => lbl.Text("Su mənbəyi tipi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_source").Editor(e => e.TagBox().ID("htiSource").FillWithSource(new { sourceType = new JS("getHtiSource") })).Label(lbl => lbl.Text("Su mənbəyi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    items.AddSimple().DataField("fk_id_ownership_type").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("fk_id_owner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+
+                    items.AddGroup().ColCount(2).Caption("Dərinliyi (m)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("depth_min").Editor(editor => editor.NumberBox().Placeholder("min").Value(null).ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("depth_max").Editor(editor => editor.NumberBox().Placeholder("max").Value(null).ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColCount(2).Caption("Su keçirmə qabiliyyəti (m³/s)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("water_permeability_min").Editor(editor => editor.NumberBox().Placeholder("min").Value(null).ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("water_permeability_max").Editor(editor => editor.NumberBox().Placeholder("max").Value(null).ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColCount(2).Caption("İstismara verildiyi tarix (il)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("EXPLOITATION_DATE_min").Editor(editor => editor.NumberBox().Placeholder("min").Value(null).ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("EXPLOITATION_DATE_max").Editor(editor => editor.NumberBox().Placeholder("max").Value(null).ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddSimple().DataField("technical_parameters").Editor(editor => editor.TextArea()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki parametrlər")).ColSpan(2);
+
+                    break;
+                case ArcgisSerivces.ARTEZIAN_VE_SUBARTEZIAN_QUYULARI:
+
+                    items.AddSimple().DataField("Name").Editor(e => e.TextBox()).Label(e => e.Location(FormLabelLocation.Top).Text("Ad"));
+                    items.AddSimple().DataField("No").Editor(e => e.TextBox()).Label(e => e.Location(FormLabelLocation.Top).Text("Nömrəsi(reper)"));
+                    items.AddSimple().DataField("FkIdAppointment").Editor(e => e.TagBox().FillWithAppointment(loadParams: new { groupId = 3 })).Label(e => e.Location(FormLabelLocation.Top).Text("Təyinatı"));
+                    items.AddSimple().DataField("FkIdWaterUseAssociation").Editor(e => e.TagBox().LoadWithWaterUseAssociation(new { adminUnitIds = new JS("getSelectedAdminUnits") })).Label(e => e.Location(FormLabelLocation.Top).Text("Xidmət etdiyi siblər"));
+                    items.AddSimple().DataField("FkIdArtesianType").Editor(e => e.TagBox().FillWithArtesianType()).Label(e => e.Location(FormLabelLocation.Top).Text("Tipi"));
+                    items.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(lbl => lbl.Text("Fəaliyyətdə olub-olmaması").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("FkIdTechnicalStatus").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki vəziyyət"));
+                    items.AddSimple().DataField("FkIdOwnershipType").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("FkIdOwner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+                    items.AddSimple().DataField("ScadaInfo").Editor(e => e.SelectBox().ShowClearButton(true).DataSource(new JS("[{Id:1, Name: 'Var'}, {Id: 2, Name:'Yoxdur'}]")).ValueExpr("Id").DisplayExpr("Name")).Label(e => e.Location(FormLabelLocation.Top).Text("SCADA sistemi"));
+                    items.AddSimple().DataField("PumpModel").Editor(e => e.TextBox()).Label(e => e.Location(FormLabelLocation.Top).Text("Nasosun markası"));
+                    items.AddSimple().DataField("PumpType").Label(e => e.Location(FormLabelLocation.Top).Text("Vertikal nasosun növü"));
+                    items.AddSimple().ColSpan(2).DataField("ResidentialArea").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Qəsəbə, kənd").Location(FormLabelLocation.Top));
+
+                    items.AddGroup().Caption("Məhsuldarlığı (l/san)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ProductivityMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ProductivityMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+                    items.AddGroup().Caption("Xidmət etdiyi sahə(ha)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ServiceAreaMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ServiceAreaMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+
+                    items.AddGroup().Caption("İstismara verildiyi tarix(il)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ExploitationDateMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ExploitationDateMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+
+                    items.AddGroup().Caption("Dərinliyi (m)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("DepthMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("DepthMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+                    items.AddGroup().Caption("Mühərrikin gücü (kvt)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("EnginePoverMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("EnginePoverMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+                    break;
+                case ArcgisSerivces.HIDROQOVSHAQ:
+
+                    items.AddSimple().DataField("name").ColSpan(2).Label(e => e.Location(FormLabelLocation.Top).Text("Adı"));
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("service_admin_unit").Editor(e => e.TagBox().FillWithAdminUnit()).Label(e => e.Location(FormLabelLocation.Top).Text("Xidmət etdiyi suvarma regionu"));
+                        gr.AddSimple().DataField("fk_id_appointment").Editor(e => e.TagBox().FillWithAppointment()).Label(e => e.Location(FormLabelLocation.Top).Text("Təyinatı"));
+                    });
+
+                    items.AddSimple().ColSpan(2).DataField("fk_id_hydro_junction_type").Editor(e => e.TagBox().FillWithHydroJunctionType()).Label(e => e.Location(FormLabelLocation.Top).Text("Hidroqovşaq tipi"));
+
+                    //items.AddGroup().ColSpan(2).ColCount(2).Items(gr =>
+                    //{
+                    //    gr.AddSimple().DataField("fk_id_source_type").Editor(e => e.TagBox().OnValueChanged("onHtiSourceTypeValueChange").ID("htiSourceType").FillWithSourceType()).Label(lbl => lbl.Text("Su mənbəyi tipi").Location(FormLabelLocation.Top));
+                    //    gr.AddSimple().DataField("fk_id_source").Editor(e => e.TagBox().ID("htiSource").FillWithSource(new { sourceType = new JS("getHtiSource") })).Label(lbl => lbl.Text("Su mənbəyi").Location(FormLabelLocation.Top));
+                    //});
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("fk_id_technical_status").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki vəziyyət"));
+                        gr.AddSimple().DataField("fk_id_activity_status").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("fk_id_ownership_type").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                        gr.AddSimple().DataField("fk_id_owner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+                    });
+
+                    items.AddSimple().ColSpan(2).DataField("fk_id_protection_type").Editor(e => e.TagBox().FillWithProtectionType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mühafizə növü"));
+
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Su mühafizə zonasının eni(m)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("protection_zone_area_min").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("protection_zone_area_max").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Xidmət etdiyi sahə (min ha)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("service_area_min").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("service_area_max").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Suburaxma qabiliyyəti (m³/san)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("max_water_release_capacity_min").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("max_water_release_capacity_max").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColCount(2).Caption("Dambanın uzunluğu (km)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("dam_length_min").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("dam_length_max").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColCount(2).Caption("İstismara verildiyi tarix(il)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("EXPLOITATION_DATE_min").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("EXPLOITATION_DATE_max").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    break;
+                case ArcgisSerivces.ISTISMAR_YOLLARI:
+                    items.AddSimple().DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("FkIdActivityStatus").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    items.AddSimple().DataField("FkIdOwnershipType").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("FkIdOwner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+                    items.AddSimple().DataField("RoadCover").Editor(e => e.TagBox().DataSource(new object[] {
+                                                                                                    new { text = "Örtüklü", value = 1 },
+                                                                                                    new { text = "Örtüksüz", value = 2 }
+                                                                                                           }).DisplayExpr("text").ValueExpr("value")).Label(e => e.Location(FormLabelLocation.Top).Text("Örtük"));
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Yolun uzunluğu (km)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("LengthMin").Editor(e => e.NumberBox().Value(null).Placeholder("min")).Label(lbl => lbl.Visible(false));
+                        gr.AddSimple().DataField("LengthMax").Editor(e => e.NumberBox().Value(null).Placeholder("max")).Label(lbl => lbl.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Yolun eni(m)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("RoadWidthMin").Editor(e => e.NumberBox().Value(null).Placeholder("min")).Label(lbl => lbl.Visible(false));
+                        gr.AddSimple().DataField("RoadWidthMax").Editor(e => e.NumberBox().Value(null).Placeholder("max")).Label(lbl => lbl.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("İstismara verildiyi tarix(il)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ExploitationDateMin").Editor(e => e.NumberBox().Value(null).Placeholder("min")).Label(lbl => lbl.Visible(false));
+                        gr.AddSimple().DataField("ExploitationDateMax").Editor(e => e.NumberBox().Value(null).Placeholder("max")).Label(lbl => lbl.Visible(false));
+                    });
+
+                    break;
+                case ArcgisSerivces.MUHAFIZE_BENDLERI:
+
+                    items.AddSimple().DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("FkIdRiver").Editor(e => e.TagBox().FillWithRiver()).Label(e => e.Location(FormLabelLocation.Top).Text("Çayın adı"));
+
+                    items.AddSimple().DataField("FkIdActivityStatus").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    items.AddSimple().DataField("FkIdTechnicalStatus").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki vəziyyət"));
+                    items.AddSimple().DataField("FkIdAppointment").Editor(e => e.TagBox().FillWithAppointment()).Label(e => e.Location(FormLabelLocation.Top).Text("Təyinatı"));
+                    items.AddSimple().DataField("FkIdBarrierType").Editor(e => e.TagBox().FillWithBarrierType()).Label(e => e.Location(FormLabelLocation.Top).Text("Bəndin növü"));
+                    items.AddSimple().DataField("FkIdOwnershipType").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("FkIdOwner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Hündürlüyü (m)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("BarrierHeightMin").Editor(editor => editor.NumberBox().Placeholder("min").ShowSpinButtons(true).ShowClearButton(true).Value(null)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("BarrierHeightMax").Editor(editor => editor.NumberBox().Placeholder("max").ShowSpinButtons(true).ShowClearButton(true).Value(null)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Uzunluğu (km)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("BarrierLengthMin").Editor(editor => editor.NumberBox().Placeholder("min").ShowSpinButtons(true).ShowClearButton(true).Value(null)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("BarrierLengthMax").Editor(editor => editor.NumberBox().Placeholder("max").ShowSpinButtons(true).ShowClearButton(true).Value(null)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("İstismara verildiyi tarix(il)").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ExploitationDateMin").Editor(editor => editor.NumberBox().Placeholder("min").ShowSpinButtons(true).ShowClearButton(true).Value(null)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ExploitationDateMax").Editor(editor => editor.NumberBox().Placeholder("max").ShowSpinButtons(true).ShowClearButton(true).Value(null)).Label(e => e.Visible(false));
+                    });
+
+
+                    break;
+                case ArcgisSerivces.QISH_OTLAQ_SAHELERI:
+
+                    items.AddSimple().DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().ColSpan(2).DataField("FkIdActivityStatus").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    items.AddSimple().DataField("FkIdOwnershipType").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("FkIdOwner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+
+                    items.AddGroup().Caption("İstismara verildiyi tarix(il)").ColCount(2).ColSpan(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ExploitationDateMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ExploitationDateMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+                    items.AddGroup().Caption("Xidmət etdiyi sahə (ha)").ColCount(2).ColSpan(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ServiceAreaMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ServiceAreaMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+                    items.AddGroup().Caption("Qurğu sayı (ədəd)").ColCount(2).ColSpan(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("DeviceCountMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("DeviceCountMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+
+                    });
+
+
+                    break;
+                case ArcgisSerivces.CHAYLAR:
+
+                    items.AddSimple().ColSpan(2).DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddGroup().ColSpan(2).Caption("Uzunluğu (km)").ColCount(2).ColSpan(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("LenghtMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("LenghtMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+                    break;
+                case ArcgisSerivces.SUTUTARLAR:
+
+                    items.AddSimple().DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("FkIdWrLocationType").Editor(e => e.TagBox().FillWithWRLocationType()).Label(e => e.Location(FormLabelLocation.Top).Text("Yerləşməsinə görə tipi"));
+                    items.AddSimple().DataField("FkIdWrRegulationType").Editor(e => e.TagBox().FillWithWRRegulationType()).Label(e => e.Location(FormLabelLocation.Top).Text("Nizamlanma növü"));
+                    items.AddSimple().DataField("FkIdAppointment").Editor(e => e.TagBox().FillWithAppointment(new { groupId = 4 })).Label(e => e.Location(FormLabelLocation.Top).Text("Əsas təyinatı"));
+                    items.AddSimple().DataField("FkIdAppointmentAddition").Editor(e => e.TagBox().FillWithAppointment(new { groupId = 4 })).Label(e => e.Location(FormLabelLocation.Top).Text("Digər təyinatı"));
+                    items.AddSimple().DataField("FkIdSourceType").Editor(e => e.TagBox().FillWithSourceType()).Label(e => e.Location(FormLabelLocation.Top).Text("Su mənbəyi tipi"));
+                    items.AddSimple().DataField("FkIdSource").Editor(e => e.TagBox().FillWithSource(new { sourceType = new JS("getSourceType") })).Label(e => e.Location(FormLabelLocation.Top).Text("Su mənbəyi"));
+                    items.AddSimple().DataField("FkIdActivityStatus").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    items.AddSimple().DataField("FkIdTechnicalStatus").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki vəziyyət"));
+                    items.AddSimple().DataField("FkIdOwnershipType").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("FkIdOwner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+                    items.AddSimple().DataField("FkIdProtectionType").Editor(e => e.TagBox().FillWithProtectionType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mühafizə növü"));
+                    items.AddGroup().Caption("Su mühafizə zonasının eni(m)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ProtectionZoneAreaMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ProtectionZoneAreaMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Normal basqı səviyyəsi(m)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("NormalPressureMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("NormalPressureMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Xidmət etdiyi sahə(ha)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ServiceAreaMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ServiceAreaMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Ölü həcm səviyyəsi ÖHS(mln.m³)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("DeadVolumeMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("DeadVolumeMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Güzgü sahəsi NBS-də (km²)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("MinorAreaAMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("MinorAreaAMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Güzgü sahəsi ÖHS-də (km²)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("MinorAreaBMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("MinorAreaBMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Həcmi NBS-də (mln.m³)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("VolumeAMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("VolumeAMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Həcmi ÖHS-də (mln.m³)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("VolumeBMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("VolumeBMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("İstismara verildiyi tarix(il)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ExploitationDateMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ExploitationDateMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    break;
+                case ArcgisSerivces.BINALAR:
+
+                    items.AddSimple().ColSpan(2).DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("ReyestrNumber").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Reyestr №").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("AdditionalAdminUnit").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Qəsəbə,kənd").Location(FormLabelLocation.Top));
+                    items.AddSimple().DataField("UsageMode").Editor(e => e.TextBox()).Label(lbl => lbl.Text("İstifadə rejimi").Location(FormLabelLocation.Top));
+
+                    items.AddSimple().DataField("FkIdAppointment").Editor(e => e.TagBox().FillWithAppointment(new { groupId = 2 })).Label(e => e.Location(FormLabelLocation.Top).Text("Əsas təyinatı"));
+                    items.AddSimple().DataField("FkIdActivityStatus").Editor(e => e.TagBox().FillWithActivityStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Fəaliyyətdə olub-olmaması"));
+                    items.AddSimple().DataField("FkIdTechnicalStatus").Editor(e => e.TagBox().FillWithTechnicalStatus()).Label(e => e.Location(FormLabelLocation.Top).Text("Texniki vəziyyət"));
+                    items.AddSimple().DataField("FkIdOwnershipType").Editor(e => e.TagBox().FillWithOwnershipType()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyət növü"));
+                    items.AddSimple().DataField("FkIdOwner").Editor(e => e.TagBox().FillWithOwner()).Label(e => e.Location(FormLabelLocation.Top).Text("Mülkiyyətçisi"));
+
+                    items.AddGroup().Caption("Xidmət etdiyi sahə (ha)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ServiceAreaMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ServiceAreaMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Ümumi sahəsi(kvm)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("AreaMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("AreaMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Köməkçi sahəsi (kvm)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("AreaAMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("AreaAMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("Faydalı sahəsi (kvm)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("AreaBMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("AreaBMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    items.AddGroup().Caption("İstismara verildiyi tarix(il)").ColSpan(2).ColCount(2).Items(gr =>
+                    {
+                        gr.AddSimple().DataField("ExploitationDateMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("ExploitationDateMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+                    break;
+                case ArcgisSerivces.GOLLER:
+                    items.AddSimple().ColSpan(2).DataField("Name").Editor(e => e.TextBox()).Label(lbl => lbl.Text("Adı").Location(FormLabelLocation.Top));
+                    items.AddGroup().ColSpan(2).ColCount(2).Caption("Həcmi").Items(gr =>
+                    {
+                        gr.AddSimple().DataField("VolumeMin").Editor(editor => editor.NumberBox().Value(null).Placeholder("min").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                        gr.AddSimple().DataField("VolumeMax").Editor(editor => editor.NumberBox().Value(null).Placeholder("max").ShowSpinButtons(true).ShowClearButton(true)).Label(e => e.Visible(false));
+                    });
+
+
+                    break;
+                default:
+
+                    break;
+            }
+
+        });
+
+        <div class="row">
+            <div class="col-12">
+                @(form)
+            </div>
+        </div>
+    }
+}

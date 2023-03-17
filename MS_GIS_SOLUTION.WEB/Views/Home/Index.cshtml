@@ -1,0 +1,706 @@
+﻿@{
+    ViewData["Title"] = ViewData["PageTitle"];
+    List<IdNameHelper> layers = (List<IdNameHelper>)ViewData["Layers"];
+}
+
+
+<script type="module" src=https://js.arcgis.com/calcite-components/1.0.0-beta.86/calcite.esm.js></script>
+<link rel="stylesheet" type="text/css" href=https://js.arcgis.com/calcite-components/1.0.0-beta.86/calcite.css />
+
+<link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
+<link rel="stylesheet" href="~/css/Custom.css" />
+<script src="~/arcgis/objectPopupTemplate.js" asp-append-version="true"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+<script src="~/arcgis/lib/search-helper.js"></script>
+
+
+<style type="text/css">
+    #map {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .page-content-tab, body.enlarge-menu .page-wrapper {
+        min-height: inherit !important;
+    }
+
+    .container-fluid {
+        padding: 0 2px 0 2px;
+    }
+
+    .esri-attribution__sources {
+        display: none !important;
+    }
+
+    .esri-attribution__powered-by {
+        display: none !important;
+    }
+
+    .esri-ui {
+        position: initial !important;
+    }
+
+    .esri-view .esri-basemap-gallery {
+        max-width: 100% !important;
+        min-width: 225px !important;
+    }
+
+    .dx-tabpanel .dx-tabs {
+        /*display: block;*/
+        border-bottom: none;
+        color: #FF8B1D;
+        font-size: larger;
+        font-weight: bold;
+    }
+
+    .dx-empty-collection.dx-tabpanel .dx-tabs {
+        border-top: solid;
+    }
+
+    /*   .dx-tabpanel .dx-tab {
+                        width: 150px;
+                        color: #E0A800;
+                    }*/
+
+    .dx-tabpanel .dx-tab:not(.dx-tab-selected):not(.dx-state-hover) {
+        color: #506EE4;
+    }
+
+    .dx-tab-text {
+        line-height: initial !important;
+    }
+
+
+    .dx-tab {
+        /*display: block;
+                        float: left;*/
+        border-right: 1px solid rgba(0, 0, 0, .2);
+    }
+
+    .dx-tab-text {
+        font-size: 10px;
+    }
+
+    .dx-accordion-item-title-caption {
+        font-size: 12px;
+    }
+
+
+    .infoContainer {
+        position: fixed;
+        bottom: 30px;
+        left: 15px;
+        background-color: white;
+        height: 360px;
+        box-shadow: 0px 0px 20px #888888;
+        border-radius: 5px;
+        padding: 10px;
+        color: gray;
+        color: gray;
+        min-width: 530px;
+        width: 530px;
+        transition: background-color 0.5s;
+        -webkit-transition: background-color 0.5s;
+        -moz-transition: background-color 0.5s;
+        -ms-transition: background-color 0.5s;
+        -o-transition: background-color 0.5s;
+    }
+
+    .divMainIcon {
+        position: absolute;
+        top: 10px;
+        left: 15px;
+        font-size: 18px;
+        color: rgb(151, 165, 173);
+        background-size: contain;
+        background-repeat: no-repeat;
+        height: 40px;
+    }
+
+    .infodivMainIcon {
+        position: absolute;
+        top: 10px;
+        right: 22px;
+        font-size: 18px;
+        color: rgb(151, 165, 173);
+        background-size: contain;
+        background-repeat: no-repeat;
+        height: 40px;
+    }
+
+    .divOpenAdvancedSearch {
+        /*position: absolute;*/
+        padding-top: 16px;
+        bottom: 5px;
+        left: 10px;
+        right: 15px;
+    }
+
+    .radio-inline,
+    .checkbox-inline {
+        display: inline-block;
+        padding-left: 20px;
+        margin-bottom: 0;
+        font-weight: normal;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+
+        .radio-inline + .radio-inline,
+        .checkbox-inline + .checkbox-inline {
+            margin-top: 0;
+            margin-left: 10px;
+        }
+
+    #divMessager {
+        margin-top: 27px;
+    }
+
+
+    #hrefOpenAdvancedSearch {
+        float: right;
+        /*font-size: 18px;
+                    margin-right: 0px;
+                    margin-bottom: 5px;*/
+    }
+
+    .divOpenAdvancedSearch a {
+        color: rgb(151, 165, 173);
+        text-decoration: underline;
+    }
+
+    /************************************  END  map  Screen   ********************************/
+
+    .ui-autocomplete.ui-front.ui-menu.ui-widget.ui-widget-content {
+        width: 100% !important;
+        max-height: 462px !important;
+        position: static !important;
+    }
+
+    .navigationContainer.dropdown-menu,
+    .ui-autocomplete {
+        max-height: 650px;
+    }
+
+    .dropdown-menu,
+    .ui-autocomplete {
+        overflow-y: scroll;
+        max-height: 800px;
+        max-width: 521px;
+    }
+
+    .dropdown-menu,
+    .ui-autocomplete {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        /*display: none;*/
+        float: left;
+        min-width: 160px;
+        padding: 5px 0;
+        margin: 2px 0 0;
+        font-size: 13px;
+        /*background-color: #b91212;*/
+        text-align: left;
+        list-style: none;
+        -webkit-background-clip: padding-box;
+        background-clip: padding-box;
+        border: 1px solid #dfdfdf;
+        border-radius: 2px;
+        -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+    }
+
+    .ui-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: block;
+        outline: none;
+    }
+
+    .ui-autocomplete {
+        cursor: default;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        /*display: none;*/
+        float: left;
+        min-width: 160px;
+        padding: 5px 0;
+        margin: 2px 0 0;
+        font-size: 14px;
+        background-color: #fff;
+        text-align: left;
+        list-style: none;
+        -webkit-background-clip: padding-box;
+        background-clip: padding-box;
+        border: 1px solid #dfdfdf;
+        border-radius: 3px;
+        -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+    }
+
+    .dropdown-menu > li > a,
+    .ui-menu .ui-menu-item {
+        display: block;
+        font-size: 13px;
+        padding: 5px 15px;
+        clear: both;
+        font-weight: normal;
+        line-height: 1.42857143;
+        color: #333;
+        white-space: nowrap;
+    }
+
+    .ui-menu .ui-menu-item {
+        cursor: pointer;
+        min-height: 0;
+        list-style-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7);
+    }
+
+    .each {
+        border-bottom: 1px solid #555;
+        padding: 3px 0;
+    }
+
+    .acItem .name {
+        font-size: 11px;
+        color: #ff0000;
+        font-style: italic;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .acItem .adminunit {
+        font-size: 12px;
+        color: black;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .acItem .object-name {
+        font-size: 14px;
+        color: #1d82aa;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .acItem .desc {
+        font-size: 10px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #da5555;
+    }
+
+    .acItem .descOLD {
+        font-size: 10px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #555;
+    }
+
+    /* popup info div  */
+
+    /* width */
+    .info-div::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    /* Track */
+    .info-div::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, .1);
+    }
+
+    /* Handle */
+    .info-div::-webkit-scrollbar-thumb {
+        background: #a6f6f8;
+    }
+
+        /* Handle on hover */
+        .info-div::-webkit-scrollbar-thumb:hover {
+            background: #506EE4;
+        }
+
+    .select2-container {
+        margin: 4px;
+    }
+
+    .footer {
+        padding: 5px;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-12 p-0 m-0">
+        <div id="map_canvas" class="w-100">
+
+            <div id="calcite_shell_panel" style="margin-left: -17px !important; margin-top: -17px !important;">
+                <calcite-shell-panel slot="primary-panel" style="height: 0;" detached>
+                    <calcite-action-bar slot="action-bar">
+                        <calcite-action data-action-id="layers" icon="layers" text="Laylar"></calcite-action>
+                        <calcite-action data-action-id="legend" icon="legend" text="Şərti işarə"></calcite-action>
+                        <calcite-action data-action-id="basemaps" icon="basemap" text="Altlıq xəritə"></calcite-action>
+                        <calcite-action data-action-id="drawpolyline" icon="measure" text="Məsafəni ölç"></calcite-action>
+                        <calcite-action data-action-id="draw-polygon" icon="measure-area" text="Sahəni ölç"></calcite-action>
+                        @*<calcite-action data-action-id="bookmarks" icon="bookmark" text="Bookmarks"></calcite-action>*@
+                        <calcite-action data-action-id="print" icon="print" text="Print"></calcite-action>
+                        <calcite-action data-action-id="search" icon="search" id="search-panel-buttom" text="Axtarış"></calcite-action>
+                        <calcite-action data-action-id="filter" icon="filter" text="Filter"></calcite-action>
+                        @*<calcite-action data-action-id="info" icon="information" text="Məlumat"></calcite-action>*@
+                    </calcite-action-bar>
+
+                    @*Map-specific panels (each one provides a div for a ArcGIS JavaScript API widget)*@
+                    <calcite-panel heading="Laylar" height-scale="l" data-panel-id="layers" hidden>
+                        <div id="layers-container"></div>
+                    </calcite-panel>
+                    <calcite-panel heading="Altlıq xəritə" height-scale="l" data-panel-id="basemaps" hidden>
+                        <div id="basemaps-container"></div>
+                    </calcite-panel>
+                    <calcite-panel heading="Şərti işarə" height-scale="l" data-panel-id="legend" hidden>
+                        <div id="legend-container"></div>
+                    </calcite-panel>
+                    @*<calcite-panel heading="Bookmarks" height-scale="l" data-panel-id="bookmarks" hidden>
+                            <div id="bookmarks-container"></div>
+                        </calcite-panel>*@
+                    <calcite-panel heading="Print" height-scale="l" data-panel-id="print" hidden>
+                        <div id="print-container"></div>
+                    </calcite-panel>
+                    @*<calcite-panel heading="Info" height-scale="l" data-panel-id="info" hidden>
+                            <div id="info-container">
+                                məlumat
+                            </div>
+                        </calcite-panel>*@
+
+                    @*Info panel (populates with info from the web map)*@
+                    <calcite-panel heading="Axtarış" data-panel-id="search" id="search-Panel" closable="true" hidden>
+
+                        <div id="Si3317" class="searchContainer" @*style="display: none;"*@>
+
+                            <div class="divMainIcon"><span class="navIcon icon-directions"></span>&nbsp; Axtarış / Search</div>
+
+                            <div class="form-inline" id="doSearchFrm">
+                                <div class="form-row w-100 pl-1">
+                                    <select id="layers" name="layers[]" class="js-example-basic-single js-states form-control" style="margin:5px; width:100%;"></select>
+                                </div>
+                                <div class="form-row w-100">
+                                    <input type="search" class="form-control ml-2 mt-1 w-100 ui-autocomplete-input" placeholder="Axtarış / Search" autocomplete="off" id="searchInput">
+                                </div>
+
+                                <input autocomplete="off" type="hidden" id="currentViewCenterLat" value="41.58383750970602">
+                                <input autocomplete="off" type="hidden" id="currentViewCenterLong" value="46.299260854400174">
+                            </div>
+
+                            <div id="divMessager"></div>
+                            <ul class="ui-autocomplete ui-front ui-menu ui-widget ui-widget-content" id="ui-id-1" tabindex="0"
+                                style="display: none;">
+                                <li class="each ui-menu-item" id="ui-id-4" tabindex="-1">
+                                    <div class="acItem">
+                                        <span class="object-name">Başlıq : </span><br>
+                                        <span class="name">Layer : </span>
+                                    </div>
+                                </li>
+                            </ul>
+
+                        </div>
+                    </calcite-panel>
+                </calcite-shell-panel>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    var layers = [];
+    var filterePumpStationIds = [];
+    var filtereChannelIds = [];
+    var filtereClosedChannelIds = [];
+    var filtereCollectorIds = [];
+    var filtereHydrotechnicalInstallationIds = [];
+    var filtereHydrotechnicalInstallationFormValues = [];
+    var filtereHydrojunctionIds = [];
+    var filteredArtesianIds = [];
+    var filteredRoadIds = [];
+    var filteredBarrierIds = [];
+    var filteredSupplyIds = [];
+    var filteredReservoirIds = [];
+    var filteredBuildingIds = [];
+    var filteredRiverIds = [];
+    var filteredLakeIds = [];
+
+    function getGridIds() {
+        let keys = $('#filterAccordion').dxAccordion('instance').option("selectedItemKeys").map(m => m.Id);
+        return keys.length > 0 ? keys : [...Array(14).keys()];
+    }
+
+    function onFullscreenButtonClick(e) {
+        $('#layerInfoPopup').dxPopup({ fullScreen: true });
+
+        getGridIds().map(m => {
+            let grid = $('#filterInfoGrid-' + m).dxDataGrid({ scrollByContent: false, height: '100%' });
+        });
+    }
+
+    function onMinimizeButtonClick(e) {
+
+        $('#layerInfoPopup').dxPopup({ fullScreen: false });
+        getGridIds().map(m => {
+            $('#filterInfoGrid-' + m).dxDataGrid({ scrollByContent: true, height: 350 });
+        });
+    }
+
+    function onFilterPopupHiding(e) {
+        let result = DevExpress.ui.dialog.confirm("<i>Filtrin nəticələri təmizlənsin?</i>", "Diqqət");
+        result.done(function (dialogResult) {
+            if (dialogResult) {
+                clearMap();
+                $('#layerInfoPopup').dxPopup({ visible: false });
+            }
+            e.component.option('visible', false);
+        });
+    }
+
+    function onResizeEnd(e) {
+        $('#tabLayers').dxTabPanel({ width: '100%', height: '100%' });
+        if (e.height < 430 && !replaced) {
+            getGridIds().map(m => {
+                let grid = $('#filterInfoGrid-' + m).dxDataGrid({ scrollByContent: false, height: '100%' });
+                $(grid.children()[0]).children().map((index, element) => {
+                    if ($(element).hasClass("dx-datagrid-header-panel")) {
+                        $(grid.children()[0].children[10]).insertAfter('.dx-datagrid-header-panel');
+                    }
+                });
+            });
+            replaced = true;
+        }
+    }
+    var replaced = false;
+</script>
+
+@(
+        Html.DevExtreme().Popup().Shading(false).ID("filterPopup").Title("Filter").OnShown("onPopupShown").Position(PositionAlignment.RightBottom).ResizeEnabled(false).ContentTemplate(new TemplateName("filterPopupTemplate")).OnHiding("onFilterPopupHiding")
+    )
+@(
+        Html.DevExtreme().Popup().OnShown("onFilterInfoPopupShown").Shading(false).ID("layerInfoPopup").Title("Məlumatlar").Position(PositionAlignment.LeftBottom).ResizeEnabled(false).ContentTemplate(new TemplateName("layerInfoPopupTemplate"))
+            .ToolbarItems(items =>
+            {
+                //items.Add().Location(ToolbarItemLocation.After).Widget(wf => wf.Button().Icon("info").OnClick("function(e){  }"));
+                items.Add().Location(ToolbarItemLocation.After).Widget(wf => wf.Button().Icon("minus").OnClick("onMinimizeButtonClick"));
+                items.Add().Location(ToolbarItemLocation.After).Widget(wf => wf.Button().Icon("fullscreen").OnClick("onFullscreenButtonClick"));
+            }).OnResizeEnd("onResizeEnd")
+    )
+
+@section scripts{
+
+    <script src="~/arcgis/arcgisLib.js"></script>
+}
+
+
+<script>
+
+    getLayerStoreIdNameList().then((s) => {
+        layers = s;
+    });
+
+    function adminUnitTagBoxSelectionChanged(e) {
+        //let selectedLayers = e.component.option('value');
+        showLayerInfoPopup();
+
+    }
+
+    function onPopupShown(e) {
+        let scroll = $('#scrollView').dxScrollView('instance');
+        scroll.option('height', (parseInt(e.component.option('height')) - 140) + 'px');
+
+    }
+
+    function onFilterInfoPopupShown() {
+
+    }
+
+    function layersTagBoxValueChanged(e) {
+        reloadWaterUseAssociation(1);
+        reloadWaterUseAssociation(2);
+        reloadWaterUseAssociation(3);
+        reloadWaterUseAssociation(5);
+    }
+
+    function reloadWaterUseAssociation(layerId) {
+        let form = $('#filterForm-' + layerId).dxForm('instance');
+        if (layerId === 5) {
+            form?.getEditor("FkIdWaterUseAssociation")?.getDataSource()?.reload();
+        } else {
+            form?.getEditor("fk_id_water_use_association")?.getDataSource()?.reload();
+        }
+    }
+
+    function onGridSelectionChanged(e) {
+
+    }
+
+    function calculateTabWidth(e) {
+        let popup = $('#layerInfoPopup').dxPopup('instance');
+        let tabLayers = $('#tabLayers').dxTabPanel('instance');
+
+        tabLayers.option('width', (parseInt(popup.option('width')) - 100) + "px");
+    }
+
+    function generateGridId(id) {
+        return id;
+    }
+
+    function onFilterInfoGridRowDblClick(e) {
+        e.event.preventDefault();
+        e.event.stopImmediatePropagation();
+        e.event.stopPropagation();
+
+        
+        let q = '';
+        let regionIds = $('#adminUnitTagBox').dxTagBox("instance").option('selectedItems').map(m => m.Id);
+        let layerId = parseInt(e.component.option('layer-id'));
+        let isChild = e.component.option('is-child');
+        console.log(regionIds, layerId, isChild)
+        switch (layerId) {
+            case ARCGIS_SERVICES.ACHIQ_SUVARMA_SHEBEKESI:
+
+                let channelId = 0;
+                if (isChild)
+                    channelId = e.data.IdChannelAdminUnit;
+                else
+                    channelId = e.data.IdChannel;
+
+                console.log(regionIds, layerId, isChild, channelId)
+
+                $.post('/channel/GetObjectIds', { channelId: channelId, isChild: isChild }).then((resp) => {
+                    let q = 'OBJECTID IN(' + resp.join(',') + ')';
+                    zoomToGraphic(layerId, q);
+                });
+
+                break;
+
+            case ARCGIS_SERVICES.QAPALI_SUVARMA_SHEBEKESI:
+                let closedChannelId = 0;
+                if (isChild)
+                    closedChannelId = e.data.IdClosedChannelAdminUnit;
+                else
+                    closedChannelId = e.data.IdClosedChannel;
+
+                $.getJSON('/ClosedChannel/GetObjectIds', { channelId: closedChannelId, isChild: isChild }).then((resp) => {
+                    let q = 'OBJECTID IN(' + resp.join(',') + ')';
+                    zoomToGraphic(layerId, q);
+                });
+
+                break;
+            case ARCGIS_SERVICES.KOLLEKTOR_DRENAJ_SHEBEKESI:
+
+                let collectorId = 0;
+                if (isChild)
+                    collectorId = e.data.IdCollectorAdminUnit;
+                else
+                    collectorId = e.data.IdCollector;
+
+                $.post('/Collector/GetObjectIds', { collectorId: collectorId, isChild: isChild }).then((resp) => {
+                    let q = 'OBJECTID IN(' + resp.join(',') + ')';
+                    zoomToGraphic(layerId, q);
+                });
+
+                break;
+            case ARCGIS_SERVICES.NASOS_STANSIYALARI:
+            case ARCGIS_SERVICES.HIDROTEXNIKI_QURGULAR:
+            case ARCGIS_SERVICES.ARTEZIAN_VE_SUBARTEZIAN_QUYULARI:
+            case ARCGIS_SERVICES.HIDROQOVSHAQ:
+            case ARCGIS_SERVICES.ISTISMAR_YOLLARI:
+            case ARCGIS_SERVICES.MUHAFIZE_BENDLERI:
+            case ARCGIS_SERVICES.QISH_OTLAQLARIN_SU_TEMINATI_SISTEMLERI:
+            case ARCGIS_SERVICES.SU_TUTARLAR:
+            case ARCGIS_SERVICES.CHAYLAR:
+            case ARCGIS_SERVICES.BINALAR_VE_TIKILILER:
+            case ARCGIS_SERVICES.GOLLER:
+                q = 'OBJECTID=' + e.data.Objectid;
+                zoomToGraphic(layerId, q);
+                break;
+            default:
+        }
+    }
+
+    function getSelectedAdminUnits(e) {
+        return $('#adminUnitTagBox').dxTagBox('instance').option('value');
+    }
+</script>
+
+@using (Html.DevExtreme().NamedTemplate("filterPopupTemplate"))
+{
+    <div class="row mt-2">
+        <div class="col-12">
+            @(Html.DevExtreme().TagBox().ID("adminUnitTagBox").FillWithAdminUnit().SearchMode(DropDownSearchMode.Contains).OnValueChanged("layersTagBoxValueChanged")
+        .OnSelectionChanged("adminUnitTagBoxSelectionChanged").SearchEnabled(true).SearchMode(DropDownSearchMode.Contains).Placeholder("Əhatə etdiyi ərazilər"))
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12">
+            @Html.DevExtreme().ScrollView().ID("scrollView").ScrollByContent(true).ShowScrollbar(ShowScrollbarMode.OnHover).Content(@<text>
+                @(
+            Html.DevExtreme().Accordion().SelectedItemKeys(new JS("[]")).Multiple(true).Collapsible(true).ActiveStateEnabled(true).Items(items =>
+            {
+                foreach (var layer in layers)
+                {
+                    items.Add().Icon("fa fa-chevron-circle-down").Title(layer.Name).Option("Id", layer.Id).Template(new TemplateName($"filterFormTemplate-{layer.Id}"));
+                }
+            }).ID("filterAccordion")
+                )
+            </text>)
+
+
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-12 text-center">
+            @(Html.DevExtreme().Button().OnClick("function(e){clearFilter();}").Width(180).Height(35).Text("Təmizlə").StylingMode(ButtonStylingMode.Outlined).Icon("clear").Type(ButtonType.Danger))
+            @(Html.DevExtreme().Button().OnClick("function(e){applyFilter();}").Width(180).Height(35).Text("Göstər").StylingMode(ButtonStylingMode.Outlined).Icon("filter").Type(ButtonType.Success))
+        </div>
+    </div>
+}
+
+
+@using (Html.DevExtreme().NamedTemplate("layerInfoPopupTemplate"))
+{
+    @Html.DevExtreme().TabPanel().Height("100%").RepaintChangesOnly(true).ShowNavButtons(true).DeferRendering(true).ScrollingEnabled(true).ScrollByContent(true).ID("tabLayers").Items(items =>
+{
+foreach (IdNameHelper layer in layers)
+{
+    items.Add().Option("Id", layer.Id).Option("visible", false).Title(layer.Name).TabTemplate(@<text><table><tr><td><span>@layer.Name</span></td><td>&nbsp;</td><td><span onclick="javascript: closeFilterTab(@layer.Id)" class="text-danger fa fa-times"></span></td></tr></table></text>).Option("Id", layer.Id).Template(new TemplateName($"filterInfoGridTemplate-{layer.Id}"));
+}
+})
+}
+
+
+<script src="~/arcgis/lib/store.js" asp-append-version="true"></script>
+<script src="~/arcgis/lib/filter_grid_columns.js" asp-append-version="true"></script>
+<script src="~/arcgis/lib/filter_form_items.js" asp-append-version="true"></script>
+<script src="~/arcgis/pages/home.js" asp-append-version="true"></script>
+
+
+@{
+    await Html.RenderPartialAsync("_FilterForm");
+}
+
+@{
+    await Html.RenderPartialAsync("_FilterInfoGrid");
+}
+
+
+
+@(
+        Html.DevExtreme().Popup().Shading(false).ID("infoPopup").Width(450).Height(400).Position(PositionAlignment.Center).ResizeEnabled(true).ContentTemplate(@<text>@(
+                Html.DevExtreme().ScrollView()
+    )</text>)
+    )

@@ -1,0 +1,41 @@
+﻿@model ErpOperation
+
+@{
+    Layout = null;
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="form-group">
+                    @Html.HiddenFor(m => m.Id)
+                    @Html.LabelFor(m => m.Name)
+                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @placeholder = "Ad" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.CssClass)
+                    @Html.TextBoxFor(m => m.CssClass, new { @class = "form-control", @placeholder = "css class" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Icon)
+                    @Html.TextBoxFor(m => m.Icon, new { @class = "form-control", @placeholder = "icon" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Target)
+                    @Html.TextBoxFor(m => m.Target, new { @class = "form-control", @placeholder = "_blank,_self, _top " })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Url)
+                    @Html.TextBoxFor(m => m.Url, new { @class = "form-control", @placeholder = "link " })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Description)
+                    @Html.TextAreaFor(m => m.Description, new { @class = "form-control", @placeholder = "Qeyd" })
+                </div>
+                @*<button type="button" onclick="SaveChanges();" class="btn btn-gradient-primary">Yadda saxla</button>
+                    <button type="button" data-dismiss="operationModal" class="btn btn-gradient-danger">Bağla</button>*@
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div><!--end row-->

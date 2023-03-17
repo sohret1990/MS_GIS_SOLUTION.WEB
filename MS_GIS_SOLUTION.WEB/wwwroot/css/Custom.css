@@ -1,0 +1,14 @@
+﻿.action-button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #0079c1;
+    text-align: center;
+    background-color: white;
+    cursor: pointer;
+}
+
+    .action-button:hover,
+    .action-button:focus {
+        background: #0079c1;
+        color: white;
+    }

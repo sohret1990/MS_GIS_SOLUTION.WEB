@@ -1,0 +1,12 @@
+﻿@model List<string> 
+@(
+    Html.DevExtreme().Gallery()
+            .ID("galleryPartial")
+            .DataSource(Model)
+        .Height(390).Width(520)
+            .Loop(true)
+            .ShowNavButtons(true)
+            .ShowIndicator(true)
+    
+        )
+

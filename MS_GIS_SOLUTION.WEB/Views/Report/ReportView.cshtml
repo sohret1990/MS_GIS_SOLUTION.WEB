@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "Çap forması";
+}
+
+
+
+
+@(
+       Html.DevExpress().WebDocumentViewer("WebDocumentViewer").AllowUrlWithJsContent(true).Height("1000px").AutoBind(true).Bind(Model)
+    )
+
+
+@section scripts{
+
+    <script>
+        $(document).ready(function () {
+            $('body').removeClass('enlarge-menu');
+            $('body').addClass('enlarge-menu');
+        });
+
+    </script>
+
+}

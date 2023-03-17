@@ -1,0 +1,128 @@
+﻿@model Obj01ChannelAdminUnitViewModel
+@{
+    ViewData["Title"] = Model.IdChannelAdminUnit <= 0 ? "Yeni rayon" : "Rayon məlumatları üzərində düzəliş";
+}
+
+
+
+
+
+<partial name="_ArcgisCreateEdit" view-data='@new ViewDataDictionary(ViewData) { { "service-id", 1 }, { "geometry-type", "polyline" }, {"object-id", Model.Objectid ?? 0 } }' />
+<link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
+
+
+<script type="text/javascript">
+
+    function onAdminUnitGridInitNewRow(e){
+        e.data.FkIdObjectAdminUnit = + @(Model.IdChannelAdminUnit??0);
+        e.data.FkIdObjectTypeGroup = 1;
+    }
+
+    function validateEditor(field) {
+        return function (options) {
+            var editor = $("#adminunitform").dxForm("instance").getEditor(field);
+            if (!editor.option("visible")) {
+                return true;
+            }
+            return editor.option("value");
+        }
+    }
+
+
+    function getAdminUnit() {
+        return $('#AdminUnit').dxSelectBox('instance').option('value');
+    }
+
+    function onAdminUnitValueChange(e) {
+
+        $('#WUAs').dxTagBox('instance').option('value', []);
+        $('#WUAs').dxTagBox('instance').getDataSource().reload();
+        $('#WUAs').dxTagBox('instance').option('disabled', e.component.option('value').length === 0);
+    }
+
+</script>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="SaveChannelAdminUnit" onsubmit="return checkBeforeSubmit()" method="post" class="tx-form">
+                    @using (Html.DevExtreme().ValidationGroup())
+                    {
+                        <input required asp-for="IdChannelAdminUnit" type="hidden" />
+                        <input asp-for="FkIdChannel" type="hidden" />
+
+                        @(Html.DevExtreme().Form<Obj01ChannelAdminUnitViewModel>().ID("adminunitform").ReadOnly(Model.Mode).ShowValidationSummary(false).Items(items =>
+                    {
+                    items.AddGroup()
+                        .Caption
+                          (Model.Mode == true ? "Ətraflı məlumat"
+                        : (Model.IdChannelAdminUnit == null ? (Model.Name + " adlı açıq suvarma şəbəkəsinə aid yeni məlumat")
+                        : (Model.Name + " adlı açıq suvarma şəbəkəsinin məlumatları üzərində düzəliş"))).ColCount(2).Items(x =>
+                        {
+                        x.AddSimpleFor(m => m.FkIdAdminUnit).Editor(e => e.SelectBox().ID("AdminUnit").OnValueChanged("onAdminUnitValueChange").FillWithAdminUnit()).Label(e => e.Text("Rayon"));
+                        x.AddSimpleFor(m => m.OrderNo).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+    .ShowClearButton(true).Min(0)).Label(e => e.Text("Sıra nömrəsi"));
+                        x.AddSimpleFor(m => m.FkIdOwner).Editor(e => e.SelectBox().FillWithOwner()).Label(e => e.Text("Mülkiyyətçisi"));
+                        x.AddSimpleFor(m => m.FkIdOwnershipType).Editor(e => e.SelectBox().FillWithOwnershipType()).Label(e => e.Text("Mülkiyyət növü"));
+                        x.AddSimpleFor(m => m.FkIdActivityStatus).Editor(e => e.SelectBox().FillWithActivityStatus()).Label(e => e.Text("Fəaliyyətdə olub-olmaması"));
+                        x.AddSimpleFor(m => m.FkIdTechnicalStatus).Editor(e => e.SelectBox().FillWithTechnicalStatus()).Label(e => e.Text("Texniki vəziyyəti"));
+                        x.AddSimpleFor(m => m.WaterMetersCount).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                         .ShowClearButton(true).Min(0)).Label(e => e.Text("Su ölçən cihazların sayı (ədəd)"));
+                        x.AddSimpleFor(m => m.Capacity).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+            .ShowClearButton(true).Min(0)).Label(e => e.Text("Suburaxma qabiliyyəti(m3/s)"));
+                        x.AddSimpleFor(m => m.ServiceArea).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                .ShowClearButton(true).Min(0)).Label(e => e.Text("Xidmət etdiyi sahə(ha)"));
+                        x.AddSimpleFor(m => m.ProtectionZoneArea).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                        .ShowClearButton(true).Min(0)).Label(e => e.Text("Mühafizə zonasının eni(m)"));
+                        x.AddSimpleFor(m => m.Length).Editor(editor => editor.NumberBox().ShowSpinButtons(true).ReadOnly(true)
+                        .ShowClearButton(true).Min(0)).Label(e => e.Text("Coğrafi uzunluq(km)"));
+                        x.AddSimpleFor(m => m.DeviceCount).Editor(editor => editor.NumberBox().ShowSpinButtons(true)
+                        .ShowClearButton(true).Min(0)).Label(e => e.Text("Üzərindəki qurğuların sayı"));
+                        x.AddSimpleFor(m => m.WUAIdList).Editor(e => e.TagBox().ID("WUAs").LoadWithWaterUseAssociationByAdminUnit(new { AdminUnitId = new JS("getAdminUnit") })).Label(e => e.Text("Xidmət etdiyi SİB-lər"));
+                        x.AddSimpleFor(m => m.AdditionalAdminUnit).Editor(editor => editor.TextBox()).Label(e => e.Text("Kənd-Qəsəbə"));
+                        x.AddSimpleFor(m => m.Objectid).Editor(e => e.NumberBox().Visible(false)).Label(x => x.Visible(false));
+                        x.AddGroup().Template(@<text>@Html.AddButtonPanel(Model.ButtonPanel)</text>).ColSpan(2);
+
+                    });
+                    }).FormData(Model).ShowValidationSummary(true))
+                    }
+
+                    @Html.DevExtreme().TabPanel().ID("tabs").Loop(true).FocusStateEnabled(true).DeferRendering(false).Items(x =>
+                    {
+                    x.Add().Title("Örtüklər").Template(new TemplateName("covers-grid"));
+                    })
+
+                    @using (Html.DevExtreme().NamedTemplate("covers-grid"))
+                    {
+                        <div class="row">
+                            <div class="col-12 p-3">
+                                @(Html.DevExtreme().DataGrid<DObjectAdminUnitBarrierType>()
+                            .ID("gridCoverContainer").StateStoring(s => s.Enabled(true).Type(StateStoringType.LocalStorage).StorageKey("storageCoverContainer"))
+                            .DataSource(Model.DObjectAdminUnitBarrierType).Export(cnf => cnf.Enabled(true)).LoadPanel(l => l.Enabled(true))
+                            .Columns(columns =>
+                            {
+                                columns.AddFor(x => x.FkIdBarrierType).LoadWithBarrierType().Caption("Örtük tipi");
+                                columns.AddFor(x => x.Length).DataType(GridColumnDataType.Number).Caption("Uzunluq(km)");
+                            })
+.Configure<DObjectAdminUnitBarrierType>(controller: "ObjectAdminUnitBarrierType").OnInitNewRow("onAdminUnitGridInitNewRow").DataSource(x => x.Mvc().Controller("ObjectAdminUnitBarrierType").LoadAction("LoadBarrierTypesByAdminUnit")
+                            .LoadMethod("GET")
+                            .InsertAction("Edit")
+                            .InsertMethod("PUT")
+                            .UpdateAction("Edit")
+                            .UpdateMethod("PUT")
+                            .DeleteAction("Delete")
+                            .DeleteMethod("DELETE")
+                            .Key("IdOauBarrierType").LoadParams(new { AdminUnitId = Model.IdChannelAdminUnit ?? 0 })).Editing(z => z.AllowAdding(Model.IdChannelAdminUnit > 0 ? true : false).AllowDeleting(true).UseIcons(true).AllowUpdating(true).Form(frm => frm.ColCount(2)).Mode(GridEditMode.Popup)
+              .Popup(popup => popup.ShowTitle(true)
+              .OnShowing("setPopupTitle").Height(170).Width(550)
+              .ShowCloseButton(true)).RefreshMode(GridEditRefreshMode.Full)).Disabled(Model.Mode))
+                            </div>
+                        </div>
+                    }
+                </form>
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>
+

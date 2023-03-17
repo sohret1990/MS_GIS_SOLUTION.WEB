@@ -1,0 +1,213 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+
+<script>
+    var selectedRowId = 0;
+</script>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">Rollar</h5>
+            <div class="card-body">
+
+
+                @(Html.DevExtreme().DataGrid<ErpRole>()
+.OnRowClick("loadActiveMenuItems")
+.Columns(cols =>
+{
+    cols.AddFor(c => c.Name).Caption("Ad").DataType(GridColumnDataType.String);
+    cols.AddFor(c => c.Code).Caption("Kod").DataType(GridColumnDataType.String);
+    cols.AddFor(c => c.Description).Caption("Qeyd").DataType(GridColumnDataType.String);
+    cols.AddFor(m => m.Status).DataType(GridColumnDataType.Number).Caption("Status")
+                    .CellTemplate(@<text>@(
+Html.DevExtreme().CheckBox().ReadOnly(true).Value(new JS("data.Status || 0"))
+)</text>).EditCellTemplate(@<text>
+                        @Html.DevExtreme().CheckBox().ID("Status").Value(new JS("data.Status || 0")).OnValueChanged("function(e) { setValue(e.value===true?1:0); }")
+</text>);
+})
+.Configure<ErpRole>(controller: "Role",width: "300" ,height: 225 ).ID("grdRoles")
+.Selection(conf =>
+{
+    conf.AllowSelectAll(false);
+    conf.Mode(SelectionMode.Single);
+    conf.ShowCheckBoxesMode(GridSelectionShowCheckBoxesMode.Always);
+
+})
+.FocusedRowEnabled(true)
+.SelectedRowKeys("")
+        )
+
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>
+
+
+<div class="row">
+
+    <div class="col-6">
+        <div class="card">
+            <h5 class="card-header bg-warning text-white mt-0">Passiv menyular</h5>
+            <div class="card-body">
+
+                @(
+
+Html.DevExtreme().DataGrid<ErpViewMenuInRole>().ID("PassivMenuItems")
+.ShowRowLines(true)
+.ShowColumnLines(true)
+.ShowBorders(true)
+.Configure<ErpViewMenuInRole>("MenuInRole", loadAction: "LoadPassivMenu", loadParams: new { RoleId = new JS("function(e){ return selectedRowId; }") })
+.Columns(cols =>
+{
+    cols.Add().DataField("Name").Caption("Ad");
+
+})
+.RowDragging(drag =>
+{
+    drag.Group("tasksGroup");
+    drag.OnAdd("removeRowFromActive");
+})
+.Editing(e=>e.AllowAdding(false).AllowDeleting(false).AllowUpdating(false))
+.OnRowRemoved("refreshMenuItemGrids")
+
+    )
+
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+    <div class="col-6">
+        <div class="card">
+            <h5 class="card-header bg-primary text-white mt-0">Aktiv menyular</h5>
+            <div class="card-body">
+
+                @(
+Html.DevExtreme().DataGrid<ErpViewMenuInRole>()
+.ID("ActiveMenuItems")
+.ShowRowLines(true)
+.ShowColumnLines(true)
+.ShowBorders(true)
+.Columns(cols =>
+{
+    cols.AddFor(x=>x.MenuName).Caption("Ad");
+    cols.AddFor(x => x.OrderNumber).Caption("S / S").SortOrder(0);
+})
+.Configure<ErpViewMenuInRole>("MenuInRole", loadAction: "LoadActiveMenu", loadParams: new { RoleId = new JS("function(e){ return selectedRowId; }") })
+.RowDragging(drag =>
+{
+    drag.Group("tasksGroup");
+    drag.OnAdd("onAdd");
+    drag.DragDirection(DragDirection.Both);
+    drag.AllowReordering(true);
+    drag.OnReorder("onActiveItemReorder");
+})
+.Editing(e =>
+{
+    e.AllowAdding(false);
+    e.AllowUpdating(false);
+})
+.OnRowRemoved("refreshMenuItemGrids")
+.OnRowInserted("refreshMenuItemGrids")
+    )
+
+
+            </div><!--end card-body-->
+        </div><!--end card-->
+    </div><!--end col-->
+</div>
+
+
+<script type="text/javascript">
+
+    function onActiveItemReorder(e) {
+        let activeItem = e.itemData;
+        let visibleRows = e.component.getVisibleRows();
+        visibleRows.splice(e.fromIndex, 1);
+        let orders = [];
+        for (var i = 0; i < visibleRows.length; i++) {
+            let order = { key: visibleRows[i].key, value: visibleRows[i].dataIndex + 10 };
+            if (visibleRows[i].data.Id == e.itemData.Id) {
+                order.value = e.toIndex - 1 + 10;
+            }
+
+            orders.push(order);
+        }
+
+        orders.splice(e.toIndex, 0, { key: activeItem.Id, value: e.toIndex + 10 });
+
+        for (var i = 0; i < orders.length; i++) {
+            orders[i].value = i;
+        }
+
+        changeOrder(orders).then((data) => {
+            refreshGrid(e);
+        }).catch((err) => {
+
+        });
+
+    }
+
+    function changeOrder(orders) {
+        return new Promise((resolve, reject) => {
+            $.post('@Url.Action("ChangeOrder", "MenuInRole")', { data: orders }).done((response) => {
+                resolve(response);
+            }).fail((err) => {
+                reject(err);
+            });
+        });
+    }
+
+
+    function removeRowFromActive(e) {
+        let treePassiv = $("#PassivMenuItems").dxDataGrid('instance');
+        treePassiv.getDataSource().store().remove(e.itemData.Id).then((data) => { refreshMenuItemGrids(e); });
+
+    }
+
+    function refreshMenuItemGrids(e) {
+
+        let treePassiv = $("#PassivMenuItems").dxDataGrid('instance');
+        treePassiv.getDataSource().reload();
+        treePassiv.refresh(true);
+
+        let treeActive = $("#ActiveMenuItems").dxDataGrid('instance');
+        treeActive.getDataSource().reload();
+        treeActive.refresh();
+    }
+
+    function onAdd(e) {
+
+        if (selectedRowId === 0) {
+            notify('warning', 'Zəhmət olmasa rol seçin');
+        }
+
+        let item = {};
+        item.RoleId = selectedRowId;
+        item.MenuId = e.itemData.Id;
+        item.OrderNumber = e.toIndex;
+
+        e.component.getDataSource().store().insert(item).then((data) => {
+            refreshMenuItemGrids(e);
+        });
+
+    }
+
+    function refreshGrid(e) {
+        e.component.getDataSource().reload();
+        e.component.refresh();
+    }
+
+    function loadActiveMenuItems(e) {
+        selectedRowId = e.key;
+        refreshMenuItemGrids(e);
+    }
+
+</script>
+
+
